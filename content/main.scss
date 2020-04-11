@@ -1,0 +1,1773 @@
+// setup
+$font_size: 13px; // fixed, ansonsten durch vscode vererbt
+
+$body_padding: 10px;
+
+$wrapper_height: 48px;
+$inp_btn_size: 32px;
+$statusbar_height: 24px;
+$opacity_inactive: 0.2;
+
+// palette manager
+$pm_padding: 8px;
+
+// picker
+$picker_padding: 8px;
+
+// colors
+$body_bg:      	  var(--vscode-editor-background);
+$body_color:      var(--vscode-editor-foreground);
+$inp_bg:          var(--vscode-input-background);
+$inp_color:       var(--vscode-input-foreground);
+$inp_border:      var(--vscode-dropdown-border);
+$btn_bg:          var(--vscode-button-background);
+$btn_color:       var(--vscode-button-foreground);
+$btn_border:      var(--vscode-input-border);
+$btn_hover_bg:    var(--vscode-button-hoverBackground);
+$dropdown_border: var(--vscode-dropdown-border);
+$ul_bg:           var(--vscode-dropdown-background);
+$ul_color:        var(--vscode-dropdown-foreground);
+$li_hover_bg:     var(--vscode-list-hoverBackground);
+$li_hover_color:  var(--vscode-list-hoverForeground);
+
+// für user-overrides -> siehe extension.js / check_custom_styles ()
+:root {
+	--selection-border: red; 
+	--popup-border: rgba(0, 0, 0, 0.5);
+	--overlay-background: rgba(0, 0, 0, 0.8);
+}
+
+$alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, #fff 10px);
+
+// text 
+.edit-sort #btn-toggle-edit-sort:after,
+.edit-convert #btn-toggle-edit-convert:after{ 
+	content: 'EXIT'; 
+}
+
+#btn-sort-name:after{    content: 'by name'; }
+#btn-sort-value:after{   content: 'by value'; }
+#btn-sort-hue:after{     content: 'by hue'; }
+#btn-sort-reverse:after{ content: 'reverse'; }
+
+#btn-convert-hex:after{ content: 'HEX'; }
+#btn-convert-rgb:after{ content: 'RGB'; }
+#btn-convert-hsl:after{ content: 'HSL'; }
+
+#pm-wrapper { // Palette Manager
+		
+	> div{
+		&:nth-of-type(1):before{ content: "Palette Manager"; } // head
+			
+		&:nth-of-type(2){
+			&:before{ content: "add new palette:"; }
+			p:after{  content: "add";}
+		}
+			
+		&:nth-of-type(3){
+			&:before{ content: "save current palette as:"; }
+			p:after{  content: "save as";}
+		}
+	}
+	
+	span:before{ content: "rename | delete palettes:"; }
+	
+}
+
+#dib-wrapper > div{ // Dialogbox
+		
+	&.save:before {         content: 'Save?'; }
+	&.delete:before {       content: 'Delete?'; }
+	&.rename:before {       content: 'Rename?'; }
+	&.restore:before{       content: 'Restore?';}
+	&.randomize:before {    content: 'Randomize?'; }
+	&.exists:before {       content: 'Not possible! Name already exists!'; }
+	&.illegal-char:before { content: 'Not possible! These chars are not allowed: \\ / : * ? " < > | '; }
+	
+	// buttons
+	p:nth-of-type(1):after{content: 'OK';}
+	p:nth-of-type(2):after{content: 'Cancel';}
+		
+}
+
+// Picker
+#picker-head:before{ content: 'Color Picker'; }
+#picker-wrapper.picker-mode-1 #picker-btn-add-replace:after{ content: 'add color to palette'; }		
+#picker-wrapper.picker-mode-2 #picker-btn-add-replace:after{ content: 'replace palette color'; }	
+#picker-btn-insert:after{  content: 'insert'; }
+ 
+// context
+#context-li-picker:after{ 	content: 'edit with color picker';}
+#context-li-add:after{    	content: 'add';}
+#context-li-duplicate:after{content: 'duplicate';}
+#context-li-delete:after{ 	content: 'delete';}
+#context-li-copy:after{   	content: 'copy';}
+#context-li-cut:after{    	content: 'cut';}
+#context-li-paste:after{  	content: 'paste';}
+	
+
+// vscode overrides ____________________________________________________________________________________________________________________________
+
+body{
+	box-sizing: border-box;
+	margin: 0;
+	padding: $body_padding $body_padding $statusbar_height $body_padding; // statusbar!
+	font-size: $font_size;
+	
+	input, p{
+		height: $inp_btn_size;
+		line-height: $inp_btn_size;
+		box-sizing: border-box;
+		margin: 0 ;
+		padding: 0;
+	}
+	
+	input{
+		font-size: inherit;
+		font-family: inherit;
+		color: inherit;
+
+		border: 1px solid $inp_border;
+		color: $inp_color;
+		background-color: $inp_bg;
+	}
+	
+	// buttons
+	p{
+		background-color: $btn_bg;
+		border: 1px solid $btn_border;
+		color: $btn_color;
+		text-align: center;
+		border-radius: 2px;
+		cursor: pointer;
+		
+		&:hover{
+			background-color: $btn_hover_bg;
+		}		
+		
+	}
+	
+	ul {
+		list-style: none;
+		display: block;
+		overflow: scroll;
+		margin: 0;
+		padding: 0;
+		background-color: $ul_bg;
+		color: $ul_color;
+		border: 1px solid $inp_border;
+		box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+
+		li{
+			display: block;
+			width: 100%;
+			line-height: $inp_btn_size;
+			padding-left: 10px;
+			cursor: pointer;
+
+			&:hover{
+				background-color: $li_hover_bg;
+				color: $li_hover_color;
+			}
+
+		}
+		
+	}
+
+}
+
+// controls-wrapper _________________________________________________________________________________________________________________
+
+#controls-wrapper{
+	position: fixed;
+	
+	// nicht mit 100vw oder 100% arbeiten / läuft rechts raus
+	top: 0;
+	right: 0;
+	left: 0;
+	
+	padding: $body_padding $body_padding 0 $body_padding;
+	background-color: $body_bg;
+		
+	z-index: 1000;
+}
+
+.ani-insert {
+	animation-duration: 0.3s;
+	animation-timing-function: ease-in-out;
+	animation-name: ani_insert;
+}
+
+@keyframes ani_insert {
+	0%   { opacity:1}
+	50%   { opacity:0}
+	100% { opacity:1} 
+}
+
+// toggle-wrapper -------------------------------------------------------
+#toggle-wrapper{
+	position: relative;
+	display: table;
+	width: 100%;
+	margin-bottom: 8px;
+
+	p{
+		position: relative;
+		width: $inp_btn_size;
+		display: table-cell;
+		
+		&:before, &:after{
+			content: '';
+			position: absolute;
+		}
+		
+	}
+
+}
+
+// dropdown Palette
+.dropdown-wrapper{
+	position: relative;
+	display: table-cell;
+	padding: 0 8px 0 4px;	
+
+	// input arrow (auf div, da auf input nicht möglich)
+	&:after{
+		content: '';
+		position: absolute;
+		display: block;
+		top: 8px;
+		right: 22px;
+		width: 8px;
+		height: 8px;
+		border-right: 2px solid $inp_color;
+		border-top: 2px solid $inp_color;
+		transform: rotate(135deg);
+		cursor: pointer;
+		pointer-events: none;
+	}
+	
+	// dropdown ul
+	ul {
+		width: calc(100% - 12px);
+		position: absolute;
+		max-height: 400px;
+		z-index: 2500;
+	}
+
+	// dropdown input
+	input{
+		display: inline-block; // Wichtig! Sonst Verschiebung wenn input leer
+		width: 100%;
+		padding: 0 8px;
+		background-color: $inp_bg;
+		cursor: pointer;
+		border: 1px solid $dropdown_border;
+		user-select: none;
+	}
+
+}
+
+#btn-toggle-insert-edit{ 	
+	
+	// Menü-Icon
+	&:before, &:after{
+		top: 50%;
+		left: 50%;
+		width: 20px;
+		margin-left: -10px;
+	}
+	
+	&:before{
+		height:10px;
+		margin-top: -7px;
+		border-top: 2px solid $btn_color;
+		border-bottom: 2px solid $btn_color;
+	}
+	
+
+	&:after{
+		height: 2px;
+		margin-top: -1px;
+		background-color: $btn_color;
+	}
+	
+}
+
+
+#btn-toggle-insertview{ // ändern Icons (siehe modes)	
+	left: -4px;	
+}
+
+// toggle + filter button
+
+#btn-toggle-insertview, #btn-filter{
+	padding: 0;
+}
+
+#btn-filter{
+	
+	// Lupe Kreis
+	&:before{
+		content: ' ';
+		display: block;
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		top: 5px;
+		left: 6px;
+		border: 2px solid  $btn_color;
+		border-radius: 50%;
+	}
+	
+	// Lupe Griff
+	&:after{
+		content: ' ';
+		display: block;
+		position: absolute;
+		width: 10px;
+		height: 2px;
+		top: 20px;
+		left: 15px;
+		transform: rotate(50deg);
+		background-color: $btn_color;
+	}
+	
+	&.active{
+		
+		// Lupe Kreis
+		&:before{
+			width: 11px;
+			height: 11px;
+			left: 9px;
+		}
+		
+		// Lupe Griff
+		&:after{
+			width: 23px;
+			top: 15px;
+			left: 2px;
+			transform: rotate(-50deg);
+			background-color: $btn_color;
+		}
+		
+	}
+
+}
+
+#filter-wrapper{
+	box-sizing: content-box;
+	display: block;
+	position: relative;
+	width: 100%;
+	padding: 0 0 6px 0;
+
+	input{
+		width: 100%;
+		padding: 0 8px;
+	}
+}
+
+
+// edit-wrapper -------------------------------------------------------
+#edit-wrapper{
+	position: relative;
+	background-color: $body_bg;
+}
+
+#edit-btn-wrapper{
+	position: relative;
+	padding-bottom: 6px;
+	
+	// buttons 
+	p{
+		position: relative;
+		display: inline-block;
+		margin: 0 4px 0 0;
+		width: $inp_btn_size;	
+		height: $inp_btn_size;	
+		line-height: $inp_btn_size;	
+	}
+
+	
+}
+
+#btn-add{
+	
+	&:before, &:after{
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 16px;
+		margin-left: -8px;
+		height: 4px;
+		margin-top: -2px;
+		background-color: $btn_color;
+
+	}
+
+	&:after{
+		transform: rotate(90deg);
+	}
+
+}
+
+@media (min-width: 400px) {
+	
+	.float-wrapper{
+		float: right;
+	}
+	
+}
+
+#btn-save{
+	margin-right: 0 !important;
+	
+	&:before, &:after{
+		content: '';
+		position: absolute;
+	}
+	
+	&:before { // Diskette Form
+		top: 50%;
+		left: 50%;
+		height: 16px;
+		width: 16px;
+		margin: -10px 0 0 -10px;
+		border: 2px solid $btn_color;
+		border-top-right-radius: 7px;
+
+	}
+
+	&:after { // Diskette Schieber
+		top: 6px;
+		left: 50%;
+		height: 8px;
+		width: 9px;
+		margin-left: -5px;
+		background-color: $btn_color;
+	}
+}
+
+#btn-restore{                     
+	
+	&:before, &:after{
+		content: '';
+		position: absolute;
+	}
+	
+	&:before{
+		top: 50%;
+		left: 50%;
+		width: 16px;
+		height: 16px;
+		margin: -10px 0 0 -10px;
+		border-radius: 50%;
+		border-top: 3px solid $btn_color;
+		border-right: 3px solid $btn_color;
+	}
+	
+	&:after{
+		top: 18px;
+		right: 6px;
+		border-style: solid;
+		border-width: 8px 6px 0 6px;
+		border-color: $btn_color transparent transparent transparent;
+		transform: rotate(40deg);
+	}
+	
+}
+
+#btn-texteditor{                     
+	
+	&:before, &:after{
+		content: '';
+		position: absolute;
+	}
+	
+	&:before{
+		top: 9px;
+		left: 10px;
+		width: 14px;
+		height: 8px;
+		background: $btn_color;
+		transform: rotate(-55deg);
+	}
+	
+	&:after{
+		top: 21px;
+		left: 6px;
+		border-style: solid;
+		border-width: 5px 4px 0 4px;
+		border-color: $btn_color transparent transparent transparent;
+		transform: rotate(35deg);
+	}
+	
+}
+
+#btn-random, #btn-pm-open{                      
+	&:after{
+		position: absolute;
+		font-size: 24px;
+		margin-left: -8px;
+		font-family: Arial, sans-serif !important; 
+		font-weight: bold;
+	}
+}
+
+#btn-random:after{ content: '?'; }
+#btn-pm-open:after{ content: 'P'; }
+
+
+
+// main wrapper / color-wrapper ____________________________________________________________________________________________________________________________
+
+#color-wrapper-main{
+	margin-top: 2px !important; // damit roter selection-border beim ersten color-wrapper sichtbar ist (z-index control-wrapper!)
+}
+
+.color-wrapper{
+	display: table;
+	position: relative;
+	width: 100%;
+	border-bottom: 1px solid transparent;
+	
+	&:before{ // before, weil nur so halbtransparente Linie in vscode-Textfarbe möglich
+		position: absolute;
+		content: '';
+		width: 100%;
+		height: 100%;
+		border-bottom: 1px solid $body_color;
+		opacity: 0.3;
+	}
+
+	&.active{
+		box-shadow: 0px 0px 0px 1px var(--selection-border);
+		border-color: transparent !important;
+		z-index: 200;
+		
+		&:before{
+			background-color: $body_color;
+			opacity: 0.04;
+		}
+		
+	}
+	
+	&:focus{
+		outline: none; // siehe js (setattribut tabindex)
+	}
+	
+	// color span
+	span{
+		position: relative;
+		display: table-cell;
+		width: $wrapper_height;
+		height: $wrapper_height;
+		
+		&:before{ // alpha bg
+			content: '';
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			background-image: $alpha_bg;
+			z-index: -1;
+		}
+	}
+
+	// input wrapper
+	div{
+		position: relative;
+		display: table-cell;
+		vertical-align: top;
+		height: 100%;
+		padding: 0 3px 0 3px;
+
+		input{
+			display: block;
+			margin: 0 0 0 6px; // abstimmen 1 !
+			// Fixed !
+			height: 22px;
+			line-height: 22px;
+			background-color: transparent;
+			border: 1px solid transparent;
+			outline: 0 !important;
+
+			&:nth-of-type(1){
+				font-weight: bold;
+			}
+
+			&:nth-of-type(2){
+				margin-left: $inp_btn_size;
+				padding-left: 2px; 
+			}
+
+		}
+		
+		// colormode switch
+		p{
+			position: absolute;
+			display: block;
+			width: 20px;
+			height: 20px;
+			bottom: 4px;
+			left: 9px; // abstimmen 1 !
+			
+			// arrow
+			&:before{
+				content: '';
+				position: absolute;
+				display: inline-block;
+				top: 50%;
+				left: 50%;
+				width: 6px;
+				height: 6px;
+				margin: -4px 0 0 -6px;
+				border-right: 2px solid $btn_color;
+				border-top: 2px solid $btn_color;
+				transform: rotate(45deg);
+			}
+			
+		}
+
+	}
+
+	// delete button
+	i{
+		position: absolute;
+		display: none;
+		width: $wrapper_height - 10px;
+		height: $wrapper_height - 10px;
+		top: 4px;
+		right: 0;
+		background-color: $btn_bg;
+		border: 1px solid $btn_border;
+		cursor: pointer;
+		z-index: 100;
+
+		&:before, &:after { // Icon
+			content: '';
+			position: absolute;
+
+		}
+		
+		&:before { // Kreis
+			top: 50%;
+			left: 50%;
+			width: 20px;
+			height: 20px;
+			margin: -12px 0 0 -12px;
+			border: 2px solid $btn_color;
+			border-radius: 50%;
+		}
+		
+		&:after { // Strich
+			top: 18px;
+			left: 8px;
+			width: 22px;
+			height: 2px;
+			background-color: $btn_color;
+			transform: rotate(45deg);
+		}
+
+
+		&:hover{
+			background-color: $btn_hover_bg;
+		}
+
+	}
+
+}
+
+// Statusbar _________________________________________________________________________________________________________________
+
+#statusbar{
+	position: fixed;
+	display: block;
+	width: 100%;
+	left: 0;
+	bottom: 0;
+	padding-left: $body_padding;
+	height: $statusbar_height;
+	line-height: $statusbar_height;
+	font-size: 12px;
+	background-color: $body_bg;
+	z-index: 201; // aktiven wrapper überdecken (z-index: 200)	
+}
+
+// Dialogbox  _________________________________________________________________________________________________________________
+
+#dib-wrapper{
+	position : fixed;
+	display: inline-block;
+	left : 0;
+	top : 0;
+	right : 0;
+	bottom : 0;
+	text-align : center;
+	border: $body_padding solid transparent; 
+	background: var(--overlay-background);
+	user-select: none; 
+	z-index: 10000;
+	
+	// vertikale Zentrierungs-Hilfe
+	&:before{    
+		content: "";
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+		margin-right: -0.25em;  
+	}
+
+	// inner wrapper
+	div {
+		display: inline-block;
+		vertical-align: middle;
+		max-width:380px;
+		padding: 26px 36px;
+		background-color: $body_bg;
+		color: $body_color;
+		border: 1px solid var(--popup-border);
+		border-radius: 4px;
+		
+		// pseudo text siehe setup + js
+		&:before{
+			display: block;
+			width: 100%;
+			margin-bottom: 10px;
+		} 
+		
+		// buttons 
+		p {
+			display: inline-block;
+			min-width: 100px !important;
+			margin: 8px;
+		}
+		
+	}
+	
+}
+
+
+// Palette Manager  _________________________________________________________________________________________________________________
+
+#pm-wrapper-outer{
+	content: '';
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 3000;
+}
+
+#pm-wrapper{
+	box-sizing: border-box;
+	position: relative;
+	max-width: 480px;
+	width: 100%;
+	padding: $pm_padding $pm_padding 20px $pm_padding;
+	margin: 0 auto;
+	background-color: $body_bg;
+	border-radius: 4px;
+	border: 1px solid var(--popup-border);
+	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+	pointer-events: all;
+	
+	transform: translateY(100px); // init
+
+	div{
+		position: relative;
+		width: 100%;
+	}
+
+	input{
+		padding: 0 8px;
+		width: calc(100% - 74px);
+
+		background-color: $inp_bg;
+		color: $inp_color;
+	}
+
+	// buttons
+	p{
+		position: absolute;
+		top: 0;
+		margin: 0;
+	}
+
+	// input add wrapper + input save-as wrapper
+	> div{
+		
+		&:nth-of-type(2), &:nth-of-type(3){
+			margin-bottom: 6px;
+			padding: 24px 0 4px 0; // top: platz für before-Text, bottom Abstand border
+	
+			&:before{ // pseudo text s.o.
+				position: absolute;
+				top: 0;
+			}
+	
+			// btn add + save as
+			p{
+				// pseudo add s.o.
+				position: absolute;
+				top: 24px;
+				line-height: $inp_btn_size - 2px; // optischer Ausgleich
+				right: 0;
+				width: 66px;
+			}
+		}
+		
+		// input add wrapper + input save-as wrapper
+		&:nth-of-type(2){
+			margin-top: 16px;
+		}
+
+	}
+	
+	
+	// label Datei-Liste 'rename | delete palettes'
+	span{
+		line-height: 32px;
+	}
+
+}
+
+
+#pm-head{
+	display: block;
+	position: relative;
+	font-size: 15px;
+	font-weight: bold;
+	
+	margin: 0 -$pm_padding;
+	padding: 0 $pm_padding;
+	
+	width: 100%;
+	height: 48px;
+	line-height: 48px;
+	border-bottom: 1px solid $inp_border;
+	
+	// close
+	p{
+		right: $pm_padding; 
+		top: $pm_padding;
+		width: $inp_btn_size;
+		
+		
+		&:before, &:after { // Kreuz
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin: -8px 0 0 -1px;
+			height: 18px;
+			width: 2px;
+			background-color: $btn_color;
+		}
+
+		&:before {
+			transform: rotate(45deg);
+		}
+
+		&:after {
+			transform: rotate(-45deg);
+		}
+
+	}
+
+}
+
+// datei-liste
+#pm-list-wrapper{
+	box-sizing: border-box;
+	min-height: 176px;
+	max-height: 274px;
+	overflow-y: auto;
+	border: 1px solid $inp_color;
+	border-radius: 4px;
+	padding: 2px 8px;
+	
+	p{
+		background-color: transparent;
+		border-color: transparent;
+	}
+	
+	input{
+		border-top: 1px solid transparent;
+		border-left: 1px solid transparent;
+		border-right: 1px solid transparent;
+		background-color: $body_bg;
+		padding-left: 2px;
+	}
+	
+	// input + buttons wrapper
+	div{
+		margin-bottom: 2px;
+		
+		// buttons rename / delete
+		p{
+			width: $inp_btn_size;
+
+			&:before, &:after {
+				content: '';
+				position: absolute;
+			}
+
+			&:nth-of-type(1){ // rename / Icon Diskette
+				right: 34px;
+
+				&:before { // Diskette Form
+					top: 50%;
+					left: 50%;
+					height: 16px;
+					width: 16px;
+					margin: -10px 0 0 -10px;
+					border: 2px solid $btn_color;
+					border-top-right-radius: 7px;
+
+				}
+
+				&:after { // Diskette Schieber
+					top: 6px;
+					left: 50%;
+					height: 8px;
+					width: 9px;
+					margin-left: -5px;
+					background-color: $btn_color;
+				}
+
+			}
+
+			&:nth-of-type(2){ // delete
+				right: 0;
+
+				&:before { // Kreis
+					top: 50%;
+					left: 50%;
+					width: 16px;
+					height: 16px;
+					border: 2px solid $btn_color;
+					margin: -10px 0 0 -10px;
+					border-radius: 50%;
+				}
+				
+				&:after { // Strich
+					top: 14px;
+					left: 6px;
+					width: 18px;
+					height: 2px;
+					background-color: $btn_color;
+					transform: rotate(45deg);
+				}
+
+
+			}
+
+		}
+		
+		&:last-of-type input{
+			border-bottom: 1px solid transparent;
+		}
+
+	}
+
+}
+
+// context menu _________________________________________________________________________________________________________________
+
+#context-ul{
+	position: fixed;
+	height:auto !important;
+	overflow-x: hidden;
+	overflow-y: auto;
+	z-index: 20000;
+	padding: 6px 0;
+	
+	li{ // pseudo-text s.o.
+		display: block;
+		width: 100%;
+		height: 30px;
+		line-height: 30px;
+		padding: 0 20px;
+		
+		&:nth-of-type(1), &:nth-of-type(4) {
+			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+		}
+		
+		&.context-li-disabled{
+			opacity: $opacity_inactive;
+		}
+		
+	}
+		
+}
+
+// js _________________________________________________________________________________________________________________
+
+.hide{
+	display: none !important;
+}
+
+.overflow-y-hidden{
+	overflow-y: hidden;
+}
+
+
+.opacity-0{
+	opacity: 0;
+}
+
+.inactive {
+	opacity: $opacity_inactive;
+	cursor: default !important;
+	pointer-events: none;
+}
+
+p.inactive:hover {
+	background-color: $btn_bg;
+}
+
+.drag-element {
+	opacity: $opacity_inactive;	
+}
+
+
+// drag head
+.drag-head{
+	cursor: grab;	
+	cursor: -webkit-grab;	
+}
+
+.drag-head-wrapper-outer{
+	overflow: hidden;
+	user-select: none;
+	pointer-events: none;	
+	transform: translateZ(0); // GPU Acc.
+	
+	&.mousehold{ pointer-events: all !important; } // Klasse wird gesetzt wenn Element bewegt werden, damit bei document mouseup keine darunterliegenden Elemente getriggert werden!
+	
+}
+
+.drag-head-wrapper{
+	pointer-events: all;
+	
+	&.drag{ position: absolute !important; }
+
+}
+
+// body modes ----------------------------------------------------------------------------------------------
+
+// insert-listview
+// insert-floatview
+// edit
+// edit-sort
+// edit-convert
+// no-palettes
+
+
+// color span
+.insert-listview, .insert-floatview, .edit{
+	.color-wrapper span{  
+		cursor: pointer;
+	}
+}	
+
+// color span
+.edit-sort, .edit-convert{
+	.color-wrapper span{  
+		pointer-events: none;
+	}
+}	
+	
+.insert-listview, .edit, .edit-sort, .edit-convert{
+
+	#btn-toggle-insertview{
+		
+		// floatview Icon
+		&:before, &:after{
+			top: 50%;
+			left: 50%;
+			width: 10px;
+			height: 10px;
+			background-color: $btn_color;
+		}
+
+		&:before{
+			margin: -11px 0 0 -11px;
+		}
+	
+		&:after{
+			margin: 1px 0 0 1px;
+		}
+
+	}
+	
+	.color-wrapper {
+
+		input{
+			pointer-events: none;
+			
+			&:nth-of-type(1){
+				width: calc(100% - 6px);
+			}
+			
+			&:nth-of-type(2){
+				width: calc(100% - 30px); 	
+			}
+
+		}
+
+	}
+	
+}
+
+// insert ----------------------------------------------------------------------------------------------
+.insert-listview, .insert-floatview{
+	
+	#edit-wrapper{
+		display: none;
+	}
+
+}
+
+// ---------------------------------
+.insert-listview{
+
+	.color-wrapper{
+		
+		input{
+			pointer-events: all;
+			
+			&:nth-of-type(1){
+				width: calc(100% - 6px);
+			}
+			
+			&:nth-of-type(2){
+				width: calc(100% - 28px); 	
+			}
+	
+		}
+		
+	}
+	
+}
+
+// ---------------------------------
+.insert-floatview{
+	
+	#btn-toggle-insertview{
+		
+		// Liste-Icon
+		&:before, &:after{
+			left: 50%;
+			top: 50%;
+			width: 20px;
+			height: 6px;
+			margin-left: -10px;
+			background-color: $btn_color;
+		}
+		
+		&:before{
+			margin-top: -9px;
+		}
+		
+
+		&:after{
+			margin-top: 3px;
+		}
+
+	}
+	
+	.color-wrapper{
+		float: left;
+		width: auto !important;
+		border-right: 1px solid $body_bg;
+		border-bottom: 1px solid $body_bg;
+		
+		// Color-Error Background
+		&:before{
+			width: 100% !important;
+			height: 100% !important;
+		}
+		
+		// Achtung! Letzter color-wrapper mit border-bottom damit der main-wrapper nach unten erweitert wird, ansonsten würde die letzte Reihe der Farbfelder durch den Statusbar verdeckt. 
+		// Hängt mit float-left zusammen! Alternativ könnte man auf den color-wrappern mit display inline-block statt float arbeiten, aber dadurch ergeben sich wieder andere Probleme
+		&:last-of-type{
+			border-bottom: $statusbar_height solid transparent !important; 
+		}
+		
+		span{
+			display: block !important;
+			width: 24px !important;
+			height: 24px !important;
+			padding: 0 !important;
+			line-height: 0 !important;
+		}
+		
+		&.active{
+			box-shadow: 0px 0px 0px 2px var(--selection-border);
+
+			span:after{
+				content: " ";
+				display: block;
+				width: 100%;
+				height: 100%;
+				box-shadow: inset 0px 0px 0px 4px $body_bg !important;
+			}
+
+		}
+
+		// input wrapper
+		div{
+			display: none !important;
+		}
+	}
+
+}
+
+ 
+// edit ----------------------------------------------------------------------------------------------
+
+.edit, .edit-sort, .edit-convert{
+	
+	#edit-wrapper{
+		display: block;
+	}
+	
+	#btn-toggle-insert-edit{ 
+		
+		// arrow
+		&:before{
+			top: 50%;
+			left: 50%;
+			width: 10px;
+			height: 10px;
+			margin: -3px 0 0 -6px;
+			border-right: 2px solid $btn_color;
+			border-top: 2px solid $btn_color;
+			border-left: 0 none;
+			border-bottom: 0 none;
+			transform: rotate(-45deg);
+		}
+		
+		&:after{
+			display: none;
+		}
+		
+	}
+	
+}
+
+// -------------------------------
+.edit{
+
+	#btn-toggle-edit-sort{
+		position: relative; 
+		width: $inp_btn_size;
+		padding: 0;
+		
+		&:before, &:after{
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 0;
+			height: 0;
+			margin-left: -6px;
+			border-style: solid;
+		}
+		
+		// Dreiecke
+		&:before{
+			margin-top: 2px;
+			border-width: 8px 6px 0 6px;
+			border-color: $btn_color transparent transparent transparent;
+		}
+		
+		&:after{
+			margin-top: -9px;
+			border-width: 0 6px 8px 6px;
+			border-color: transparent transparent $btn_color transparent; 
+		}
+		
+	}
+
+	#btn-toggle-edit-convert{
+		position: relative; 
+		width: $inp_btn_size;
+		padding: 0;
+		
+		// arrow
+		&:before{
+			content: '';
+			position: absolute;
+			display: inline-block;
+			top: 50%;
+			left: 50%;
+			width: 8px;
+			height: 8px;
+			margin: -6px 0 0 -8px;
+			border-right: 4px solid $btn_color;
+			border-top: 4px solid $btn_color;
+			transform: rotate(45deg);
+		}
+		
+	}
+	
+	#btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse,
+	#btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
+		display: none;
+	}
+	
+	.color-wrapper{
+
+		input{			
+			pointer-events: all;
+			
+			&:nth-of-type(1){
+				width: calc(100% - 52px);
+				z-index: 10;	
+			}
+			
+			&:nth-of-type(2){
+				width: calc(100% - 74px);	
+			}
+			
+		}
+
+		i{ // delete buttons
+			display: block;
+		}
+
+	}
+
+}
+
+// -------------------------------
+.edit-sort, .edit-convert{
+	
+	#edit-btn-wrapper{
+		padding-bottom: 5px; // 1px weniger als in '.edit' ... irgend eine komische Verschiebung (wahrscheinlich durch text innerhalb der Buttons)
+	}
+	
+	#btn-save, #btn-restore, #btn-add, #btn-texteditor, #btn-random, #btn-pm-open{
+		display: none;
+	}
+	
+}
+
+.edit-convert{
+	
+	#btn-toggle-edit-sort, #btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse{
+		display: none;
+	}
+	
+	#btn-toggle-edit-convert, #btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
+		display: inline-block !important;
+		width: auto !important;
+		padding: 0 8px;
+		line-height: 30px; // optischer Ausgleich
+		margin-bottom: 4px;
+	}
+
+
+	#btn-toggle-edit-convert{
+		font-weight: bold;
+		margin-left: 0 !important;
+	}
+	
+}
+
+.edit-sort{
+	
+	#btn-toggle-edit-convert, #btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
+		display: none;
+	}
+	
+	#btn-toggle-edit-sort, #btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse{
+		width: auto !important;
+		padding: 0 8px;
+		line-height: 30px; // optischer Ausgleich
+		margin-bottom: 4px;
+	}
+
+
+	#btn-toggle-edit-sort{
+		font-weight: bold;
+		margin-left: 0 !important;
+	}
+
+	#btn-sort-name, #btn-sort-value, #btn-sort-hue{
+		display: inline-block !important;
+	}
+
+	.color-wrapper {
+		border-bottom: 1px dashed $body_color;
+		cursor: -webkit-grab;
+		user-select: none;
+		
+		// input wrapper
+		> div{
+			
+			
+			input{
+				pointer-events: none;
+				width: calc(100% - 10px) !important;				
+				
+				&:nth-of-type(2){
+					margin-left: 4px;
+				}
+				
+			}
+			
+			// color switch
+			p{
+				display: none;
+			}
+			
+		}
+
+	}
+
+}
+
+// ----------------------------------------------------------------------------------------------
+.no-palettes{
+	
+	#edit-wrapper{
+		display: block;
+	}
+	
+	.dropdown-wrapper, #pm-wrapper > div:nth-of-type(3), #btn-toggle-insert-edit, #btn-toggle-insertview, #btn-filter, #btn-save, #btn-restore, #btn-add, #btn-texteditor, #btn-random, #btn-toggle-edit-sort{
+		opacity: $opacity_inactive;
+		pointer-events: none;
+	}
+
+}
+
+
+// color picker _________________________________________________________________________________________________________________
+
+// Overlay
+#picker-wrapper-outer{ 
+	position: fixed;
+	display: block;
+	
+	// nicht mit 100vw oder 100% arbeiten / läuft rechts raus
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	
+	z-index: 4000;
+	
+	&.picker-mousehold{ pointer-events: all !important; } // Klasse wird gesetzt wenn Element bewegt werden, damit bei document mouseup keine darunterliegenden Elemente getriggert werden!
+	
+}
+
+#picker-wrapper {
+	box-sizing: border-box;
+	position: relative;
+	max-width: 420px;
+	width: 100%;
+	margin: 0 auto;
+	padding: $picker_padding;
+	background-color: $body_bg;
+	border-radius: 4px;
+	border: 1px solid var(--popup-border);
+	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+	user-select: none;	
+}
+
+#picker-head{
+	position: relative;
+	display: block;
+	height: 40px;
+	
+	&:before{ // pseudo text s.o.
+		position: absolute;
+		left: 4px;
+		line-height: 32px; // in etwa close btn height
+		font-size: 15px;
+		font-weight: bold;
+	}
+	
+}
+
+// close btn
+#picker-btn-close{
+	position: absolute;
+	top: $picker_padding;
+	right: $picker_padding;
+	width: $inp_btn_size;
+	z-index: 2002;	
+	
+	&:before, &:after { // Kreuz
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin: -8px 0 0 -1px;
+		height: 18px;
+		width: 2px;
+		background-color: $btn_color;
+	}
+
+	&:before {
+		transform: rotate(45deg);
+	}
+
+	&:after {
+		transform: rotate(-45deg);
+	}
+
+}
+
+// buttons ----------------------------------------------------------
+
+#picker-btn-insert {
+	margin-bottom: 10px;
+}
+
+#picker-preview-wrapper{
+	display: table;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+	border: 1px solid $inp_border;
+	z-index: 1;
+	
+	&:before{ // alpha bg
+		// nicht height:100% und top:0 -> führt zu Problemen mit Buttons (nur pointer-events auf Text ???)
+		content: '';
+		position: absolute;
+		top: 30px; // ███ abstimmen 1 ███ 
+		left: 0;
+		width: 100%;
+		height: calc(100% - 30px); // ███ abstimmen 1 ███ 
+		background-image: $alpha_bg;
+		z-index: -1;
+	}
+	
+	span{
+		display: table-cell;
+		width: 50%;
+		height: 80px;
+		border-top: 30px solid $body_bg; // ███ abstimmen 1 ███		
+	}
+	
+}
+
+#picker-btn-add-replace { // ändert pseudo text s.o.
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 30px; // ███ abstimmen 1 ███ 
+	line-height: 30px; // ███ abstimmen 1 ███ 
+	border-top: 1px solid transparent;
+	border-left: 1px solid transparent;
+	border-right: 1px solid transparent;
+	border-bottom: 1px solid $inp_border;
+	border-radius: 0;
+}
+
+// color val ----------------------------------------------------------
+
+#picker-switch-wrapper{
+	position: relative;
+	width: 100%;
+	padding-left: 36px;
+	margin: 16px 0 4px 0;
+}
+
+#picker-btn-switch {
+	position: absolute;
+    display: block;
+    width: 24px;
+    height: 24px;
+    left: 0;
+	
+	// arrow
+	&:before{
+		content: '';
+		position: absolute;
+		display: inline-block;
+		top: 8px;
+		left: 6px;
+		width: 6px;
+		height: 6px;
+		border-right: 2px solid $btn_color;
+		border-top: 2px solid $btn_color;
+		transform: rotate(45deg);
+	}
+}
+
+#picker-text-switch {
+	display: block;
+	width: 100%;
+	height: 26px;
+	line-height: 26px;
+}
+
+#picker_controls_info{
+	display: block;
+	height: 24px;
+	line-height: 24px;
+	margin-bottom: 10px;
+	
+	&.alpha{text-align-last: left;}
+	&.sat{text-align-last: center;}
+	&.hue{text-align-last: right;}
+	
+}
+
+// picker controls ----------------------------------------------------------
+
+#picker-controls-wrapper {
+	position: relative;
+	width: 100%;
+	margin: 0 auto;
+	
+	&:after{
+		content: '';
+		display: block;
+		padding-bottom: 76%; // height
+	}
+	
+	&:before{ // alpha-slider bg / funktioniert auf alpha-slider selbst nicht !
+		content: '';
+		position: absolute;
+		
+		// abstimmen mit widht alpha slider !
+		width: 6%; 
+		height: 100%;
+		//border: 1px solid transparent;
+		border-radius: 2px;
+		
+		background-image: $alpha_bg;
+	}
+	
+}
+
+#sat-rect, #hue-slider, #alpha-slider{
+	position: absolute;
+	display: block;
+	top: 0;
+	height: 100%;
+	box-shadow: 0px 0px 0 1px rgba(0,0,0,0.4); // nicht mit border arbeiten! Sah bei den Material-Themes scheiße aus, da dort einige border-Farben auf transparent festgelegt sind
+	border-radius: 2px;
+	cursor: pointer;
+}
+
+#sat-rect {
+	left: 12%;
+    width: 76%;
+	background: rgb(0, 68, 255); // init
+	
+	div:nth-of-type(1){ 
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(to bottom, #fff, transparent, #000), linear-gradient(to right, #808080, transparent), transparent;
+	}
+	
+	.pointer{
+		width: 4%;
+		left: 0;
+		top: 0; 
+		background: #fff; // init	
+	}
+	
+}
+
+#alpha-slider, #hue-slider {
+	width: 6%;
+	
+	.pointer{
+		width: calc(100% - 2px);
+		left: 50%;
+	}
+	
+}
+
+#hue-slider {
+	right: 0;
+	background: linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 34%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+	
+	.pointer{
+		background: #f00; // init  
+	}
+	
+}
+
+#alpha-slider {
+	left: 0;
+
+	.pointer{
+		background: transparent;		
+	}
+}
+
+.pointer {
+    position: absolute;
+    border: 1px solid #fff;
+	box-shadow: 0 0 4px #000;
+	border-radius: 50%;
+	z-index: 2001;
+	cursor: pointer;
+	
+	transform: translate(-50%, -50%); // init
+	
+	&:after{
+		content: '';
+		display: block;
+		padding-bottom: 100%; // height
+	}
+	
+}
+
+// btn insert ------------------------------------------
+
+#picker-btn-insert{
+	width: 100%;
+	height: 42px;
+	line-height: 42px;
+	margin-top: 40px;
+}
+
+
+// test
+
+/*:root {
+	--vscode-editor-foreground: #fff;
+	--vscode-editor-background: #000;
+
+    --vscode-dropdown-listBackground: #000;
+	--vscode-dropdown-foreground: #fff;
+	--vscode-dropdown-border: #fff;
+
+	--vscode-list-dropBackground: #000;
+	--vscode-list-hoverBackground: blue;
+	--vscode-list-hoverForeground: #fff;
+
+
+    --vscode-button-background: #000;
+    --vscode-button-foreground: #fff;
+	--vscode-button-hoverBackground: blue;
+
+	--vscode-input-background: #000;
+	--vscode-input-foreground: #fff;
+	--vscode-input-border: #fff;
+
+
+
+}
+
+body{
+	background-color: $body_bg;
+	color: $body_color;
+}*/
+
