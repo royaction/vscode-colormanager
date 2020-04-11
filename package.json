@@ -97,7 +97,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://bla"
+		"url": "https://github.com/royaction/vscode-colormanager"
 	},
 	"__metadata": {
 		"id": "2d8a7f8c-621f-42d0-9cf3-4a1524fe158e",

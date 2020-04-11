@@ -19,6 +19,7 @@ No Node-Modules! The main extension is plain Vanilla JS and has only a few KiloB
 
 # Changelog
 
+- v0.5.7 git repo added
 - v0.5.5 support for Hex-Colors with prefix "0x" (see docs-> "Usage" -> 5th sub-headline)
 - v0.5.4 performance improvements, lots of fixes
 - v0.5.3 the extensions saves and remembers its state when you close vscode without closing the extension before, some other bugfixes
@@ -77,7 +78,9 @@ The extension has it's own context-menu: right-click on the color and chose 'edi
 
 `Attention!` Hex-Colors within the Webview-Extension are still handeled with the prefix "#", but you can edit "0x"-values in your document, and you can insert "#"-HexColors as "0x"-HexColors with the setting below (this also affects the Autocomplete-feature) 
 
-`"color-manager.insertClassicHex": true,` 
+```json
+"color-manager.insertClassicHex": true, 
+```
 
 If you want to toggle that setting on the fly, then I recommend the extension "Settings Cycler". I think this is the best solution, because it avoids double-entries in the palette for different languages. And it did less work for me :)
 
@@ -128,7 +131,9 @@ Remove palette from autocomplete: run the command "intellisense remove palette".
 
 `Attention! This will only work if you have specified some languages in your settings. Heres an example-configuration: ` 
 
-`"color-manager.languages": [ "css", "html", "javascript", "json", "scss" ]` 
+```json
+"color-manager.languages": [ "css", "html", "javascript", "json", "scss" ] 
+```
 
 # Customize the colors of the user-interface:
 
@@ -138,7 +143,8 @@ Here is an example that you can paste into your settings ... looks like shit, bu
 
 `Info! You dont have to use all of the properties! If you just want to change the appearence of the buttons, then just set the "button..."-properties`
 
->"color-manager.styles": {  
+```json
+"color-manager.styles": {  
 	"selectionBorder": "blue",  
 	"background": "LightGrey",  
 	"foreground": "green", // labels and lines  
@@ -155,7 +161,7 @@ Here is an example that you can paste into your settings ... looks like shit, bu
 	"dropdownHoverBackground": "hsla(0, 61%, 50%, 0.51)",  
 	"overlayBackground": "hsla(0, 61%, 50%, 0.51)" // overlay for dialogbox   
 },
-
+```
 
 # Don't pollute my context-menu!!! :(
 
