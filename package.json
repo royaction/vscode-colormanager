@@ -2,7 +2,7 @@
 	"name": "color-manager",
 	"displayName": "Color Manager",
 	"description": "color picker and color palette",
-	"version": "0.5.6",
+	"version": "0.6.1",
 	"publisher": "royaction",
 	"engines": {
 		"vscode": "^1.36.0"
@@ -19,7 +19,10 @@
 		"onCommand:extension.cm_open_picker_sel",
 		"onCommand:extension.cm_restore_factory",
 		"onCommand:extension.cm_palette_autocomplete_add",
-		"onCommand:extension.cm_palette_autocomplete_remove"
+		"onCommand:extension.cm_palette_autocomplete_remove",
+		"onCommand:extension.cm_find_colors_in_selection",
+		"onCommand:extension.cm_changelog",
+		"onCommand:extension.cm_help"
 	],
 	"main": "./extension",
 	"contributes": {
@@ -35,6 +38,10 @@
 				},
 				{
 					"command": "extension.cm_open_picker_sel",
+					"group": "99_cm"
+				},
+				{
+					"command": "extension.cm_find_colors_in_selection",
 					"group": "99_cm"
 				}
 			]
@@ -63,6 +70,18 @@
 			{
 				"command": "extension.cm_palette_autocomplete_remove",
 				"title": "intellisense remove palette"
+			},
+			{
+				"command": "extension.cm_find_colors_in_selection",
+				"title": "find colors in selection"
+			},
+			{
+				"command": "extension.cm_changelog",
+				"title": "color manager changelog"
+			},
+			{
+				"command": "extension.cm_help",
+				"title": "color manager help"
 			}
 		],
 		"configuration": {

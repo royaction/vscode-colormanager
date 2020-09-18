@@ -1,10 +1,10 @@
 (function() {
-
-	// todo:
-	// Filter Leerzeichen reopen (kein trim !!!!)
-	// vscode api on close -> store webview ???
-
-
+	
+	// Todo: Falls es irgendwann mal ein webview blur event geben sollte, dann die Krücke für ctrl-combos unter doc_keydown() und colorwrapper_mousedown() entfernen 
+	// und in dem Fall per vscode api eine message an das webview senden und ctrl_key + shift_key auf false setzen und die "multiselect"-Klasse vom main wrapper entfernen 
+	// (genaue Problembeschreibung siehe doc_keydown)
+	
+	
 	// rgba_to_hsla _______________________________________________________________________________________________________________________________________________
 	const rgba_to_hsla = (arr) => {
 
@@ -238,7 +238,7 @@
 
 		const get_picker_dimensions = () => { // drag head muss Zugriff haben (siehe 'drag_head_mousedown()')
 
-			const sat_rect_bcr = $sat_rect.getBoundingClientRect()
+			const sat_rect_bcr = $sat_rect.getBoundingClientRect();
 
 			sat_rect_top = parseInt(sat_rect_bcr.top + window.scrollY);
 			sat_rect_left = parseInt(sat_rect_bcr.left);
@@ -409,48 +409,62 @@
 
 			$picker_color_text.textContent = picker_color;
 
+			// falls immer noch error-bg / spätestens jetzt hat der user die controls bewegt und einen korrekten Wert erzeugt
+			if(picker_color_check_failed === true) picker_color_check_failed = false;
+
 		},
 
 		// replace color text _______________________________________________________________________________________________________________________________________________
 		picker_invalid_color = () => {
-			$picker_color_text.textContent = 'INVALID COLOR VALUE';
-			$picker_preview_sel.style.background = 'linear-gradient(transparent 0%, transparent 47%, red 50%, transparent 53%, transparent 100%)';
-			$picker_preview_new.style.background = '#fff'; // init siehe css
+			$sat_rect.style.background = '#f00'; // rot weil hue-slider bei init ganz oben
+			$picker_color_text.textContent = str_invalid_color;
+			$picker_preview_sel.style.background = 'linear-gradient(135deg, transparent 0%, transparent 48%, red 50%, transparent 52%, transparent 100%)';
+			$picker_preview_new.style.background = '#fff';
 		},
 
 		// switch color system _______________________________________________________________________________________________________________________________________________
 		picker_btn_switch_mousedown = () => {
 
-			picker_color = switch_color_system(picker_color);
+			if(picker_color_check_failed === false){
 
-			// picker_csys: 0 = HEX6 | HEX6a | HEX3 | HEX3a | CSS Color
-			// 				1 = rgba
-			//				2 = hsla
+				picker_color = switch_color_system(picker_color);
 
-			const tmp = picker_color.substr(0,2);
+				// picker_csys: 0 = HEX6 | HEX6a | HEX3 | HEX3a | CSS Color
+				// 				1 = rgba
+				//				2 = hsla
 
-			// rgb
-			if(tmp === 'rg') picker_csys = 1;
-			// hsl
-			else if(tmp === 'hs') picker_csys = 2;
-			// hex | css color
-			else picker_csys = 0;
+				const tmp = picker_color.substr(0,2);
 
-			$picker_color_text.textContent = picker_color;
+				// rgb
+				if(tmp === 'rg') picker_csys = 1;
+				// hsl
+				else if(tmp === 'hs') picker_csys = 2;
+				// hex | css color
+				else picker_csys = 0;
+
+				$picker_color_text.textContent = picker_color;
+
+			}
 
 		},
 
 		// add replace _______________________________________________________________________________________________________________________________________________
-		picker_add_color = () => {
-			add_color(picker_color, picker_color, c_cid);
+		picker_add_colors = () => {
+			add_colors([picker_color], [picker_color], c_cid, false);
 			$picker_preview_sel.style.background = picker_color;
 		},
 
 		picker_replace_color = () => {
-			arr_c[c_cid] = picker_color;
-			arr_b[c_cid] = picker_color_check_failed === false ? picker_color : color_error_bg;
-			$color_inputs_c[c_cid].value = picker_color;
-			$color_spans[c_cid].style.background = arr_b[c_cid];
+			const 	arr_replace_ids = get_selected_ids(),
+					replace_len = arr_replace_ids.length;
+			if(replace_len > 0){
+				for (i = 0; i < replace_len; i++) {
+					arr_c[arr_replace_ids[i]] = picker_color;
+					arr_b[arr_replace_ids[i]] = picker_color_check_failed === false ? picker_color : color_error_bg;
+					$color_inputs_c[arr_replace_ids[i]].value = picker_color_check_failed === false ? picker_color : str_invalid_color;
+					$color_spans[arr_replace_ids[i]].style.background = arr_b[arr_replace_ids[i]];
+				}
+			}
 		},
 
 		// insert doc  _______________________________________________________________________________________________________________________________________________
@@ -597,7 +611,9 @@
 
 		$picker_btn_insert       = document.createElement("p"),
 
-		arr_picker_hsla_default = [0, 0, 100, 1]; // falls check_color false zurückgibt
+		arr_picker_hsla_default = [0, 0, 100, 1], // falls check_color false zurückgibt
+
+		str_invalid_color = 'INVALID COLOR VALUE';
 
 		// def let ---------------------------------------------------
 		let arr_picker_hsla = [],
@@ -648,10 +664,10 @@
 		}
 
 		// START open_picker ____________________________________________________________________________________________________________
-		
+
 		// 0x-Hex > "0x" durch "#" ersetzen?
 		if(str_color.substr(0,2) === '0x') str_color = '#' + str_color.substr(2,str_color.length);
-		
+
 		picker_check_color(str_color); // aktualisiert arr_picker_hsla + picker_color_check_failed + picker_csys
 
 		$picker_wrapper_outer.id = 'picker-wrapper-outer';
@@ -677,7 +693,7 @@
 
 		// btn add replace
 		$picker_btn_add_replace.id = 'picker-btn-add-replace';
-		if(picker_mode === 1) $picker_btn_add_replace.addEventListener("mousedown", picker_add_color, false); // mousedown, wegen doc mouseup
+		if(picker_mode === 1) $picker_btn_add_replace.addEventListener("mousedown", picker_add_colors, false); // mousedown, wegen doc mouseup
 		else $picker_btn_add_replace.addEventListener("mousedown", picker_replace_color, false); // mousedown, wegen doc mouseup
 
 		// span selected
@@ -797,7 +813,6 @@
 
 	},
 
-
 	// switch_color_system █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
 	// benutzt von picker und color color wrapper switch
@@ -872,460 +887,439 @@
 	},
 
 
-	// add_color █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	// add_colors █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
 	// benutzt von picker, control-button und contextmenu
 
-	add_color = (new_n, new_c, insert_pos) => { // string, string || true, true (neue Farbe)     insert_pos entspricht entweder c_cid oder c_len (wenn am Ende eingefügt werden soll)
+	add_colors = (arr_new_n, arr_new_c, insert_pos, select_added) => { // arr_new_n = array oder true (neue Farbe)        insert_pos entspricht entweder c_cid oder c_len (wenn am Ende eingefügt werden soll)
 
-		const refresh_filter_ids = () => {
+		const refresh_filter_visibility_without_dynamic_scroll = () => {
+			for (i = filter_insert_pos; i < filtered_ids_len; i++) $color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
+		},
 
-			// Wenn im gefilterten Zustand eine Farbe eingefügt wurde, werden alle nachfolgenden gefilterten id's um 1 hochgezählt. Diese werden
-			// dann abschließend mit dieser Funktion sichtbar gemacht.
+		compensate_dynamic_scroll_padding = (len) => {
+			$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
+		},
 
-			// aktualisierte filter-id's einblenden (wurden ggf. um 1 hochgezählt)
-			for (i = 0; i < filtered_ids_len; i++) $color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
+		scroll_y_before = window.scrollY; // scroll-Position speichern (muss gemacht werden bevor ggf. die nicht mehr aktuellen filter id's ausgeblendet werden und bevor dynamic scroll aktiviert wird)
 
-			$color_wrappers[c_cid].className = 'color-wrapper active';
+		let len_before = filter_open === 0 ? c_len : filtered_ids_len,
+			filter_insert_pos = 0;
 
-			// das ist der wrapper der unter 'create_color_wrappers()' ganz am Ende eingefügt wurde. Falls dieser nicht zufällig zu den gefilterten id's gehört muss
-			// er wieder versteckt werden
-			if(arr_filtered_ids[filtered_ids_len-1] !== c_len-1) $color_wrappers[c_len-1].className = 'hide';
-
-		};
-
-
-		let change_active_wrapper = false;
-
-		if(new_n === true){
-			new_n = 'New Color';
-			new_c = '#000';
+		// arr_new_n = true? (Neue Farbe)
+		if(arr_new_n === true){
+			arr_new_n = ['New Color'];
+			arr_new_c = ['#000'];
+			new_len = 1;
 		}
-
-		// am Anfang einfügen?
-		if(insert_pos === -1){ // falls insert_pos bzw. c_cid = -1 wird am Anfang eingefügt
-
-			// ohne Filter
-			if(filter_open === 0){
-				insert_pos = 0;
-				c_cid = 0;
-			}
-			// gefiltert
-			else{
-				insert_pos = arr_filtered_ids[0];
-				c_cid = insert_pos;
-				arr_filtered_ids.unshift(insert_pos);
-				filtered_ids_len++;
-				for (i = 1; i < filtered_ids_len; i++){  // alle Nachfolgfenden um 1 verschieben/hochzählen
-					$color_wrappers[arr_filtered_ids[i]].className = 'hide';
-					arr_filtered_ids[i]++; // wrapper-Klassen-Aktualisierung siehe 'refresh_filter_ids()' (kann erst später gemacht werden)
-				}
-			}
-
-			change_active_wrapper = true;
-
-		}
-		// am Ende einfügen?
-		else if(insert_pos === c_len){
-
-			$color_wrappers[c_cid].className = 'color-wrapper'; // 'active' entfernen
-
-			// ohne Filter
-			if(filter_open === 0){
-				c_cid = c_len; // Aufpassen!!! Wird vor dem Hinzufügen hochgezählt!
-			}
-			// gefiltert
-			else{
-				insert_pos = arr_filtered_ids[filtered_ids_len-1] + 1; // Aufpassen!!! Wird vor dem Hinzufügen hochgezählt!
-				c_cid = insert_pos;
-				arr_filtered_ids.push(insert_pos);
-				filtered_ids_len++;
-			}
-
-			change_active_wrapper = true;
-
-		}
-		// an aktueller Position einfügen
+		// Farb-Array übergeben
 		else{
+			new_len = arr_new_n.length;
+		}
 
-			// gefiltert
-			if(filter_open === 1){
+		// Filter
+		if(filter_open === 1){
 
-				let filter_insert_pos = -1;
-
-				for (i = 0; i < filtered_ids_len; i++){
-					// Einfüge-Position ermitteln
-					if(filter_insert_pos === -1){
-						if(arr_filtered_ids[i] === c_cid){
-							filter_insert_pos = i;
-							arr_filtered_ids[i]++;
-						}
-					}
-					// alle Nachfolgfenden um 1 hochzählen
-					else{
-						$color_wrappers[arr_filtered_ids[i]].className = 'hide';
-						arr_filtered_ids[i]++; // wrapper-Klassen-Aktualisierung siehe 'refresh_filter_ids()' (kann erst später gemacht werden)
-					}
+			// Filter leer (am Anfang einfügen)
+			if(filtered_ids_len < 1){
+				insert_pos = 0; 
+				// "filter_insert_pos" bleibt 0 (s.o.) 
+				i = 0; // reset ???
+				arr_filtered_ids = [...Array(new_len)].map((_,i) => i + 0); // 0 fortlaufend hochzählen bis new_nen erreicht:[0, 1, 2, ...]
+				filtered_ids_len = new_len;
+			}
+			// Filter nicht leer
+			else{
+				
+				// position von insert_pos im Filter-Array ermitteln ...				
+				if(insert_pos !== -1){ 
+					filter_insert_pos = arr_filtered_ids.indexOf(insert_pos);  
+				}
+				// 
+				else{ // nichts markiert: c_cid = -1 (am Anfang vom Filter-Array einfügen)
+					insert_pos = arr_filtered_ids[0]; 
+					// "filter_insert_pos" bleibt 0 (s.o.)
 				}
 
-				arr_filtered_ids.splice(filter_insert_pos, 0, c_cid);
-				filtered_ids_len++;
+				// ... und alle Nachfolgenden hochzählen
+				for (i = filter_insert_pos; i < filtered_ids_len; i++){
+					$color_wrappers[arr_filtered_ids[i]].className = 'hide'; // ausblenden / nicht mehr aktuell da sich id ändert
+					arr_filtered_ids[i] += new_len;
+				}
+
+				//  neue fortlaufende filter-ids erzeugen und in arr_filtered_ids einfügen
+				i = 0; // reset ???
+				let arr_temp = [...Array(new_len)].map((_,i) => i + insert_pos); // fortlaufend hochzählen bis new_nen erreicht: [100, 101, 102, ...]
+				arr_filtered_ids.splice(filter_insert_pos, 0, ...arr_temp);
+				filtered_ids_len += new_len;
 
 			}
 
 		}
+		// kein Filter
+		else{
+			if(insert_pos === -1) insert_pos = 0; // nichts markiert: c_cid = -1 (am Anfang einfügen)
+		}
 
+		// neue Farben in Farb-Arrays einfügen
+		arr_n.splice(insert_pos, 0, ...arr_new_n);
+		arr_c.splice(insert_pos, 0, ...arr_new_c);
+		arr_b.splice(insert_pos, 0, ...arr_new_c);
 
-		// Arrays anpassen + neuen wrapper am Ende einfügen
-		arr_n.splice(insert_pos, 0, new_n);
-		arr_c.splice(insert_pos, 0, new_c);
-		arr_b.splice(insert_pos, 0, new_c);
+		c_len += new_len;
 
-		c_len++;
-		create_color_wrappers(c_len-1, c_len); // einzelnen wrapper erzeugen und erstmal am Ende einfügen (reorder s.u.)
+		// neue wrapper erzeugen (erstmal am Ende einfügen) und später dann refresh_color_wrappers()
+		create_color_wrappers(c_len - new_len, c_len);
 
 
 		// floatview
 		if(mode_current === 'insert-floatview'){
-			refresh_color_wrappers(); // ██ reorder ██
-			if(filter_open === 1) refresh_filter_ids();
+			if(filter_open === 1) refresh_filter_visibility_without_dynamic_scroll();
 		}
 		// listview
 		else{
 
-			// dynamic scroll ist bereits aktiv
+			// dynamic scroll ist bereits aktiv  ________________________________________________________________________________________________________________________________________
 			if(dynamic_scroll_is_active === true){
 
-				// ohne filter
-				if(filter_open === 0){
+				const n_visible_wrappers = current_visible_wrappers * 3;
 
-					// scroll position Ende bzw. ganz nach unten gescrollt?
-					if(visible_index_end_mem === c_len - 1){
-						$color_wrappers[visible_index_start_mem-1].className = 'hide';
-						visible_index_start_mem++;
-						visible_index_end_mem++;
-						$color_wrappers[visible_index_end_mem-1].className = 'color-wrapper';
+				// scroll-Position ganz unten bzw. am Ende ------------------------------------------------------------------------------------
+				if(visible_index_end_mem === len_before){ // len_before = c_len oder filtered_ids_len (s.o.)
+
+
+					const visible_index_start_mem_old = visible_index_start_mem;
+
+					// neu berechnen: wenn die scroll-Postion ganz unten ist und es werden dort 1000 Farben hinzugefügt, dann müssen die visible Indexe neu berechnet werden,
+					// weil sich der sichtbare Bereich dann nicht mehr am Ende befindet sonder "in der Mitte" (bzw. weiter vorne)
+					recalc_visible_index_mem();
+
+
+					// ohne Filter
+					if(filter_open === 0){
+						for (i = 0; i < n_visible_wrappers; i++){
+							if(visible_index_start_mem_old + i < visible_index_start_mem) $color_wrappers[visible_index_start_mem_old + i].className = 'hide';
+							$color_wrappers[visible_index_start_mem + i].className = 'color-wrapper';
+						}
+					}
+					// Filter
+					else{
+						for (i = 0; i < n_visible_wrappers; i++){
+							if(visible_index_start_mem_old + i < visible_index_start_mem) $color_wrappers[arr_filtered_ids[visible_index_start_mem + i]].className = 'hide'; // verantwortlich für Scroll-Sprünge!
+							$color_wrappers[arr_filtered_ids[visible_index_start_mem + i]].className = 'color-wrapper';
+						}
+
+						// Scroll-Position ausgleichen s.o. (keine Ahnung warum hier noch zusätzlich die neuen wrapper-Höhen dazu müssen, aber ansonsten gibt es Sprünge)
+						window.scrollTo(0, scroll_y_before + (color_wrapper_height * new_len));
+
 					}
 
 				}
-				// gefiltert
+				// scroll-Position Mitte oder Anfang ------------------------------------------------------------------------------------
 				else{
 
-					// scroll position Ende bzw. ganz nach unten gescrollt?
-					if(visible_index_end_mem === arr_filtered_ids[filtered_ids_len - 1]){
-						$color_wrappers[arr_filtered_ids[visible_index_start_mem -1]].className = 'hide';
-						visible_index_start_mem++;
-						visible_index_end_mem++;
-						$color_wrappers[arr_filtered_ids[visible_index_end_mem -1]].className = 'color-wrapper';
-					}
+					// hier muss nur der gefilterete Zustand berücksichtigt werden. Wenn nicht gefiltert ist bleibt der sichtbare Bereich gleich
+					// und es wird ganz unten nur ein refresh gemacht!
 
-					// aktualisierte filter-id's einblenden (wurden ggf. um 1 hochgezählt / siehe oben)
-					for (i = 0; i < filtered_ids_len; i++){
-						if(arr_filtered_ids[i] >= visible_index_start_mem && arr_filtered_ids[i] <= visible_index_end_mem ){
-							$color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
+					if(filter_open === 1){
+						for (i = 0; i < n_visible_wrappers; i++){
+							$color_wrappers[arr_filtered_ids[visible_index_start_mem + i]].className = 'color-wrapper';
 						}
 					}
 
-					// das ist der wrapper der unter 'create_color_wrappers()' ganz am Ende eingefügt wurde. Falls dieser nicht zufällig zu den gefilterten id's gehört muss
-					// er wieder versteckt werden
-					if(arr_filtered_ids[filtered_ids_len-1] !== c_len-1) $color_wrappers[c_len-1].className = 'hide';
-
 				}
 
-				refresh_color_wrappers(); // ██ reorder ██
+				// padding kompensieren: genau wie sonst nur zusätzlich "+ new_len" (len_before entspricht entweder c_len oder filtered_ids_len s.o.)
+				compensate_dynamic_scroll_padding(len_before + new_len);
+
 
 			}
+			// soll dynamic scroll aktiviert werden?  ________________________________________________________________________________________________________________________________________
 			else {
 
-				let len = filter_open === 0 ? c_len : filtered_ids_len;
+				let len = filter_open === 0 ? c_len : filtered_ids_len; // wurden beide oben hochgezählt!
 
-				// dynamic scroll muss jetzt aktiviert werden
-				if(dynamic_scroll_is_active === false && len > dynamic_scroll_limit){
+				// dynamic scroll muss jetzt aktiviert werden  -------------------------------------------
+				if(len > dynamic_scroll_limit){
 
 					if (color_wrapper_height === 0) dynamic_scroll_get_values();
 
-					scroll_y_mem = window.scrollY; // scroll-Position speichern und nach dem Ausblenden der dynamischen wrapper, wieder zu dieser Position springen (s.u.)
-
 					recalc_visible_index_mem();
 
-					// ohne filter
+					// ohne filter: wrapper davor|dahinter ausblenden + reorder
 					if(filter_open === 0){
-						// wrapper davor|dahinter ausblenden + reorder
-						for (i = 0; i < c_len; i++) {
-
+						for (i = 0; i < len; i++) { // c_len
 							$color_wrappers[i].className = i < visible_index_start_mem || i > visible_index_end_mem ? 'hide' : 'color-wrapper';
-
-							// ██ reorder ██ identisch mit 'refresh_color_wrappers()'
-							$color_inputs_n[i].value = arr_n[i];
-							$color_inputs_c[i].value = arr_c[i];
-							$color_spans[i].style.background = arr_b[i];
-
 						}
-
-						if(c_cid >= visible_index_start_mem && c_cid <= visible_index_end_mem) $color_wrappers[c_cid].className = 'color-wrapper active';
-
 					}
 					// gefiltert
 					else{
-
-						var pos = - 1;
-
-						// wrapper davor|dahinter ausblenden + reorder
-						for (i = 0; i < c_len; i++) {
-
-							pos = arr_filtered_ids.indexOf(i);
-
-							if(pos !== -1 && arr_filtered_ids[pos] >= arr_filtered_ids[visible_index_start_mem] && arr_filtered_ids[pos] <= arr_filtered_ids[visible_index_end_mem] ){
-								$color_wrappers[arr_filtered_ids[pos]].className = 'color-wrapper';
-							}
-							else{
-								$color_wrappers[i].className = 'hide';
-							}
-
-							// ██ reorder ██ identisch mit 'refresh_color_wrappers()'
-							$color_inputs_n[i].value = arr_n[i];
-							$color_inputs_c[i].value = arr_c[i];
-							$color_spans[i].style.background = arr_b[i];
-
+						for (i = 0; i < len; i++) { // filtered_ids_len
+							$color_wrappers[arr_filtered_ids[i]].className = i < visible_index_start_mem || i > visible_index_end_mem ? 'hide' : 'color-wrapper';
 						}
-
-						if(c_cid >= arr_filtered_ids[visible_index_start_mem] && c_cid <= arr_filtered_ids[visible_index_end_mem]) $color_wrappers[c_cid].className = 'color-wrapper active';
-
 					}
 
-					// padding-Ausgleich für ausgeblendete wrapper
-					$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((c_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
+					// padding-Ausgleich
+					compensate_dynamic_scroll_padding(len); // entweder neue c_len oder neue filtered_ids_len (s.o.)
 
-					window.scrollTo(0, scroll_y_mem); // s.o.
+					$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
 
+					window.scrollTo(0, scroll_y_before); // s.o.
 					dynamic_scroll_bind_listener();
 
 				}
-				// dynamic scroll ist nicht aktiv
+				// dynamic scroll muss nicht aktiviert werden  -------------------------------------------
 				else{
-					refresh_color_wrappers(); // ██ reorder ██
-					if(filter_open === 1) refresh_filter_ids();
+					if(filter_open === 1) refresh_filter_visibility_without_dynamic_scroll();
 				}
 
 			}
 
 		}
 
-		// aktiver wrapper hat sich geändert?
-		if(change_active_wrapper === true) $color_wrappers[c_cid].className = 'color-wrapper active';
+		// float + listview
+		refresh_color_wrappers(insert_pos);
+		
+		// c_cid setzen
+		
+		/*if(c_cid !== -1){ // c_cid vorhanden
+			$color_inp_wrappers[c_cid].className = '';
+			c_cid = filter_open === 0 ? insert_pos : arr_filtered_ids[filter_insert_pos];
+		}*/
+		
+		if(c_cid === -1){
+			c_cid = filter_open === 0 ? 0 : arr_filtered_ids[0];
+			store_webview_state(); // c_cid aktualisieren
+		}
+		
+		// neu Hinzugefügte markieren?
+		if(select_added === true){
 
+			if(sel_len > 0) reset_selection(true);
+			
+			let loop_start = insert_pos,
+				loop_end = insert_pos + new_len;
 
+			for (i = loop_start; i < loop_end; i++) {
+				$color_inp_wrappers[i].className = 'selected';
+				arr_sel_ids[sel_len] = i;
+				sel_len++;
+			}
+			
+			// c_cid aus selected id's entfernen sonst doppelt, siehe: get_selected_ids()
+			if(c_cid >= loop_start && c_cid < loop_end){
+				arr_sel_ids.splice(arr_sel_ids.indexOf(c_cid), 1); 
+				sel_len--;
+			}
+
+		}
+		
+		// c_cid markieren (erst hier, falls vorher im Loop mit "selected" überschrieben)
+		$color_inp_wrappers[c_cid].className = 'active';
+		
 		// wenn sich der aktive bzw. neu hinzugefügte wrappper außerhalb des sichtbaren Bereichs befindet, dann dorthin scrollen
-		if(mode_current !== 'insert-floatview'){
-
-			// dynamic scroll ist aktiv
-			if(dynamic_scroll_is_active === true){
-
-				const c_cid_wrapper_top = color_wrapper_height * c_cid;
-
-				if(c_cid_wrapper_top <= scroll_y_mem || c_cid_wrapper_top >= scroll_y_mem + window_height - controls_height - color_wrapper_height){ // - color_wrapper_height = 1 wrapper Toleranz
-					window.scrollTo(0, c_cid_wrapper_top);
-				}
-
-			}
-			// dynamic scroll ist nicht aktiv
-			else{
-
-				if(color_wrapper_height === 0) color_wrapper_height = $color_wrappers[0].offsetHeight;
-
-				const 	c_cid_wrapper_top = $color_wrappers[c_cid].offsetTop,
-						scroll_y = window.scrollY;
-
-				if(c_cid_wrapper_top <= scroll_y || c_cid_wrapper_top >= scroll_y + window_height - controls_height){ // - color_wrapper_height = 1 wrapper Toleranz
-					window.scrollTo(0, c_cid_wrapper_top - controls_height);
-				}
-
-			}
-
-		}
-
+		scroll_to_active();
+		
 		// Statusbar aktualisieren
-		set_statusbar_text();
-
+		set_statusbar_counter();
+		set_statusbar_active(); 
 
 	},
 
-	// delete_color █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	// get_selected_ids █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
-	// benutzt von wrapper-button und contextmenu
+	get_selected_ids = () => {
 
-	delete_color = () => {
+		let arr_return = [];
 
-		let len_before = filter_open === 0 ? c_len : filtered_ids_len;
+		if (sel_len === 0) {
+			if (c_cid !== -1) arr_return[0] = c_cid;
+		}
+		else{
+			arr_return = arr_sel_ids.slice();
+			if (c_cid !== -1) arr_return.push(c_cid);
+			arr_return.sort(function(a, b){return a-b});
+		}
+
+		return arr_return;
+
+	},
+
+	// delete_colors █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+	// benutzt von wrapper-delete-button und contextmenu
+
+	delete_colors = () => {
+
+		const 	arr_delete_ids = get_selected_ids(), // werden sortiert zurückgegeben!
+				delete_len = arr_delete_ids.length;
+
+		if (delete_len === 0) return; //  ███ return ███
+
+		let len_before = filter_open === 0 ? c_len : filtered_ids_len,
+			loop_start = 0,
+			loop_end = 0,
+			arr_temp = [],
+			n = 0;
+
 
 		// arr_filtered_ids aktualisieren ?
 		if(filter_open === 1){
 
-			let filter_delete_pos = -1;
+			// position von erster Delete-ID im Filter-Array ermitteln
+			var filter_delete_start_pos = arr_filtered_ids.indexOf(arr_delete_ids[0]),
+				id_minus_compensate = 0;
 
-			for (i = 0; i < filtered_ids_len; i++){
-				// Lösch-Position ermitteln
-				if(filter_delete_pos === -1){
-					if(arr_filtered_ids[i] === c_cid){
-						filter_delete_pos = i;
-						arr_filtered_ids[i]--;
-					}
+			for (i = filter_delete_start_pos; i < filtered_ids_len; i++) {
+
+				// Nur ausblenden wenn dynamic scroll deaktiviert ist! Wenn dynamic scroll aktiv ist, wird einfach nur der sichtbare Bereich aktualisiert (s.u.)
+				if (dynamic_scroll_is_active === false) $color_wrappers[arr_filtered_ids[i]].className = 'hide'; // nicht mehr aktuellen wrapper ausblenden
+
+				// match delete id
+				if(arr_delete_ids.indexOf(arr_filtered_ids[i]) !== -1){
+					id_minus_compensate++; // "Lücken-Ausgleich" hochzählen
 				}
-				// alle Nachfolgenden um 1 runterzählen (gleiches Prinzip wie 'add_color()', nur runter- statt hochzählen)
+				// Alle Nachfolgenden die nicht ausgewählt wurden, aktualisieren bzw. runterzählen
 				else{
-					$color_wrappers[arr_filtered_ids[i]].className = 'hide';
-					arr_filtered_ids[i]--; // wrapper-Klassen-Aktualisierung siehe 'refresh_filter_ids()' (kann erst später gemacht werden)
+					arr_temp[n] = arr_filtered_ids[i] - id_minus_compensate;
+					n++;
 				}
+
 			}
 
-			// entfernen
-			arr_filtered_ids.splice(filter_delete_pos, 1);
-			filtered_ids_len--;
+			// Filtered ID's aktualisieren
+			arr_filtered_ids = [...arr_filtered_ids.splice(0, filter_delete_start_pos), ...arr_temp];
+			filtered_ids_len -= delete_len;
 
 		}
 
-		// dynamic scroll anpassen?
+
+		// entfernen (rückwärts)
+		loop_start = c_len - 1;
+		loop_end = c_len - delete_len;
+		n = 1;
+
+		for (i = loop_start; i >= loop_end; i--) {
+
+			$color_wrapper_main.removeChild($color_wrappers[i]); // wrapper am Ende entfernen (später dann refresh_color_wrappers() s.u.)
+
+			// active- und selected-Klassen entfernen
+			$color_inp_wrappers[arr_delete_ids[delete_len - n]].className = '';
+
+			// Farb-Arrays aktualisieren
+			arr_n.splice(arr_delete_ids[delete_len - n], 1); // Info! "arr_delete_ids" wurde sortiert: siehe "get_selected_ids()"
+			arr_c.splice(arr_delete_ids[delete_len - n], 1);
+			arr_b.splice(arr_delete_ids[delete_len - n], 1);
+
+			n++;
+
+		}
+
+		// in den Collectoren auch erstmal am Ende entfernen (später dann refresh_color_wrappers() s.u.)
+		$color_wrappers.splice(c_len - delete_len, delete_len);
+		$color_inputs_n.splice(c_len - delete_len, delete_len);
+		$color_inputs_c.splice(c_len - delete_len, delete_len);
+		$color_inp_wrappers.splice(c_len - delete_len, delete_len);
+		$color_spans.splice(c_len - delete_len, delete_len);
+
+		c_len -= delete_len;
+
+
+		// Listview: dynamic scroll ________________________________________________________________________________________________________________
 		if(dynamic_scroll_is_active === true){
 
-			// dynamic scroll entfernen?
-			if(len_before - 1 <= dynamic_scroll_limit){ // - 1 da erst weiter unten runtergezählt wird
+
+			// dynamic scroll deaktivieren -------------------------------------------------------------------
+			if(len_before - delete_len <= dynamic_scroll_limit){
+
 				dynamic_scroll_remove(); // entfernt window-scroll-listener und padding vom main wrapper
+
+				// kein Filter
+				if(filter_open === 0){
+					for (i = 0; i < c_len; i++) $color_wrappers[i].className = 'color-wrapper'; // alle sichtbar machen
+				}
+				// Filter (oben aktualisiert)
+				else{
+					for (i = 0; i < filtered_ids_len; i++) $color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper'; // nur gefilterte sichtbar machen
+				}
+
 			}
-			// dynamic scroll beibehalten und anpassen ...
+			// dynamic scroll beibehalten -------------------------------------------------------------------
 			else{
 
-				// kein Filter -------
+				const n_visible_wrappers = current_visible_wrappers * 3;
+
+				// scroll-Position ganz unten bzw. am Ende
+				if(visible_index_end_mem === len_before){ // len_before = c_len oder filtered_ids_len (s.o.)
+					visible_index_start_mem -= delete_len;
+					visible_index_end_mem -= delete_len;
+				}
+
+				// ohne Filter
 				if(filter_open === 0){
-
-					// scroll-Position ganz unten bzw. am Ende
-					if(visible_index_end_mem === c_len){
-						visible_index_start_mem--;
-						visible_index_end_mem--;
-
-						// hide-Klasse vom (neuen) ersten sichtbaren wrapper entfernen
-						$color_wrappers[visible_index_start_mem].className = 'color-wrapper';
-					}
-					else{
-						// hide-Klasse vom (neuen) letzten sichtbaren wrapper entfernen
-						$color_wrappers[visible_index_end_mem].className = 'color-wrapper';
-					}
-
-					// padding kompensieren (c_len - 1, da c_len erst später runtergezählt wird !!!)
-					$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((c_len - 1 - visible_index_end_mem) * color_wrapper_height) + 'px 0';
-
+					for (i = 0; i < n_visible_wrappers; i++) $color_wrappers[visible_index_start_mem + i].className = 'color-wrapper';
 				}
-				// gefiltert -------
+				// Filter
 				else{
-
-					// scroll-Position ganz unten bzw. am Ende
-					if(visible_index_end_mem === filtered_ids_len + 1){ // + 1 da oben bereits aktualisiert bzw. 1 runtergezählt wurde
-						visible_index_start_mem--;
-						visible_index_end_mem--;
-
-						// hide-Klasse vom (neuen) ersten sichtbaren wrapper entfernen
-						$color_wrappers[arr_filtered_ids[visible_index_start_mem]].className = 'color-wrapper';
-					}
-					else{
-						// hide-Klasse vom (neuen) letzten sichtbaren wrapper entfernen
-						$color_wrappers[arr_filtered_ids[visible_index_end_mem]].className = 'color-wrapper';
-					}
-
-					// padding kompensieren
-					$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((filtered_ids_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
-
+					for (i = 0; i < n_visible_wrappers; i++) $color_wrappers[arr_filtered_ids[visible_index_start_mem + i]].className = 'color-wrapper';
 
 				}
 
+				// padding kompensieren
+				$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((len_before - delete_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
+
 			}
 
 		}
-
-		// wrapper entfernen + vars aktualisieren
-		$color_wrapper_main.removeChild($color_wrappers[c_cid]);
-
-		$color_wrappers.splice(c_cid, 1);
-		$color_inputs_n.splice(c_cid, 1);
-		$color_inputs_c.splice(c_cid, 1);
-		$color_spans.splice(c_cid, 1);
-
-		arr_n.splice(c_cid, 1);
-		arr_c.splice(c_cid, 1);
-		arr_b.splice(c_cid, 1);
-		c_len--;
-
-		if(c_cid === c_len) c_cid--;
-
-		// wrapper aktualisieren
-
-		// floatview (nur wrapper-id's und tooltips aktualisieren)
-		if(mode_current === 'insert-floatview'){
-			for (i = 0; i < c_len; i++) {
-				$color_wrappers[i].wid = i;
-				$color_wrappers[i].title = arr_n[i] === arr_c[i] ? arr_n[i] : arr_n[i]+': '+arr_c[i]; // title aktualisieren
-			}
-		}
-		// listview
+		// Listview ohne dynamic scroll oder Floatview ________________________________________________________________________________________________________________
 		else{
 
-			// kein Filter ------
-			if(filter_open === 0){
+			// Info!!! Trifft auch auf "insert-floatview" zu, da dort dynamic scoll niemals aktiv ist!
 
-				// dynamic scroll wurde deaktiviert (alle wrapper sichtbar machen und wrapper-id's aktualisieren )
-				if(len_before > dynamic_scroll_limit && c_len <= dynamic_scroll_limit ){
-					for (i = 0; i < c_len; i++){
-						$color_wrappers[i].wid = i;
-						$color_wrappers[i].className = 'color-wrapper';
-					}
-				}
-				// dynamic scroll ist deaktiviert oder aktiviert (in beiden Fällen einfach nur die wrapper-id's aktualisieren)
-				else{
-					for (i = 0; i < c_len; i++) $color_wrappers[i].wid = i; // nur wrapper-id's aktualisieren
-				}
-
-
-			}
-			// gefiltert ------
-			else{
-
-				// hier müssen die gefilterten wrapper-Id's so oder so sichtbar gemacht werden, da alle nach dem gelöschlten wrapper
-				// nachfolgenden Filter-Id's um 1 runtergezählt wurden (s.o.)
-
-				// dynamic scroll war aktiv und ist immer noch aktiv
-				if(dynamic_scroll_is_active === true){
-					for (i = 0; i < c_len; i++){
-						$color_wrappers[i].wid = i; // wrapper-id's aktualisieren
-						if(i < visible_index_end_mem) $color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
-					}
-				}
-				else { // dynamic scroll war nicht aktiv oder wurde gerade deaktiviert
-
-					let arr_filtered_ids_copy = arr_filtered_ids.slice(),
-						pos_found = -1;
-
-					for (i = 0; i < c_len; i++){ // alle gefilterten id's sichtbar machen und wrapper-id's aktualisieren
-
-						$color_wrappers[i].wid = i;
-
-						pos_found = arr_filtered_ids_copy.indexOf(i);
-
-						if(pos_found !== -1){
-							$color_wrappers[i].className = 'color-wrapper';
-							arr_filtered_ids_copy.splice(pos_found, 1); // gefundene id entfernen um nachfolgende Suchen zu beschleunigen
-						}
-
-					}
-
-				}
-
+			if(filter_open === 1){ // Filter: aktualisierte gefilterte wrapper einblenden
+				for (i = filter_delete_start_pos; i < filtered_ids_len; i++) $color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
 			}
 
 		}
 
-		// aktiven wrapper aktualisieren
-		if(len_before === 1) c_cid = -1;
-		else $color_wrappers[c_cid].className = 'color-wrapper active';
 
-		set_statusbar_text();
+		// Palette leer oder alle gefilterten Einträge gelöscht?
+		if(len_before === delete_len){ // len_before = c_len oder filtered_ids_len !
+			c_cid = -1;
+		}
+		// refresh + aktiven wrapper markieren
+		else{
+
+			refresh_color_wrappers(arr_delete_ids[0]);
+
+			// c_cid aktualisieren!
+			if(c_cid !== -1){
+
+				// ohne Filter
+				if(filter_open === 0){
+					c_cid = arr_delete_ids[0] > c_len - 1 ? c_len - 1 : arr_delete_ids[0]; // befindet sich gelöschte c_cid hinter aktualisierter Länge?
+				}
+				// Filter
+				else{
+					c_cid = filter_delete_start_pos === len_before - 1 ? arr_filtered_ids[filter_delete_start_pos - 1] : arr_filtered_ids[filter_delete_start_pos];  // befindet sich gelöschte c_cid hinter aktualisierter Länge?
+				}
+
+				$color_inp_wrappers[c_cid].className = 'active';
+
+			}
+
+		}
+		
+		store_webview_state(); // c_cid aktualisieren
+
+		// reset selection vars
+		if(sel_len > 0){
+			arr_sel_ids = [];
+			sel_len = 0;
+		}
+
+		set_statusbar_counter();
+		set_statusbar_active();
 
 	},
 
@@ -1381,7 +1375,7 @@
 					window.scrollTo(0,0);
 
 					scroll_y = 0 ;
-					scroll_y_mem = -1;
+					scroll_y_pos = -1;
 					visible_index_start_mem = 0;
 					visible_index_end_mem = current_visible_wrappers * 3; // "current_visible_wrappers" kurz zuvor ermittelt -> "dynamic_scroll_get_values()" (s.o.)
 
@@ -1400,54 +1394,56 @@
 
 
 			},
-			
+
 			// -----------------------------------------------------------------------------------------------------
 			switch_listview_to_floatview = () => {
-				
+
 				const add_title = (n) => {
 					$color_wrappers[n].title = arr_n[n] === arr_c[n] ? arr_n[n] : arr_n[n]+': '+arr_c[n];
 					// Sort-Mode noch aktiv? -> drag mousedown deaktivieren
 					if(sort_mode === true) $color_wrappers[n].removeEventListener("mousedown", colorwrapper_drag_mousedown, false);
 				}
-				
+
+				$main_wrapper.className = 'hide'; // ███ Performance ███
+
 				// dynamic scroll aktiv
 				if(c_len > dynamic_scroll_limit){
 
 					dynamic_scroll_remove();
-					
+
 					// ungefiltert / alle wrapper sichtbar machen
 					if (filtered_ids_len === 0) {
 						for (i = 0; i < c_len; i++){
 							add_title(i);
 							$color_wrappers[i].className = 'color-wrapper';
 						}
-						if (c_cid !== -1) $color_wrappers[c_cid].className = 'color-wrapper active';	
 					}
 					// gefiltert / nur gefilterte wrapper sichtbar machen
 					else{
-						
+
 						let arr_filtered_ids_copy = arr_filtered_ids.slice(),
 							found_index = -1;
-						
+
 						for (i = 0; i < c_len; i++){
 							add_title(i);
 							found_index = arr_filtered_ids_copy.indexOf(i);
 							arr_filtered_ids_copy.splice(found_index, 1); // entfernen um nachfolgende Suchen beschleunigen
 							if (found_index !== -1) $color_wrappers[i].className = 'color-wrapper';
-							
+
 						}
-						if (c_cid !== -1 && arr_filtered_ids.indexOf(c_cid) !== -1) $color_wrappers[c_cid].className = 'color-wrapper active';
 					}
-	
+
 				}
 				// dynamic scroll NICHT aktiv
 				else{
 					for (i = 0; i < c_len; i++) add_title(i);
-					if (c_cid !== -1) $color_wrappers[c_cid].className = 'color-wrapper active';
 				}
 
 				sort_mode = false;
 				convert_mode = false;
+
+				// Nur zur Info! Wird unten sowieso durch listview-Klasse ersetzt!
+				// $main_wrapper.className = ''; // ███ Performance ███
 
 			},
 
@@ -1558,22 +1554,26 @@
 			if($dropdown_input.opened === false){
 				$dropdown_input.opened = true;
 
-				const dropdown_li_mousedown = (e) => {
-					if(e.currentTarget.t_id !== p_cid){
-						p_cid = e.currentTarget.t_id;
+				const dropdown_li_mouseup = (e) => {
+
+					if(e.currentTarget.l_id !== p_cid){
+						p_cid = e.currentTarget.l_id;
 						vscode.postMessage({ // ███ vscode APi ███
 							command: 'change_palette',
 							p_cid: p_cid,
 						})
 						$dropdown_input.value = arr_p[p_cid];
 					}
+
+					dropdown_close(); // immer schließen, auch wenn aktuelle Palette geklickt
+
 				};
 
 				for (i = 0; i < p_len; i++) {
 					$dropdown_li[i] = document.createElement('li');
-					$dropdown_li[i].t_id = i; // t_id = this id
+					$dropdown_li[i].l_id = i; // l_id = list id
 					$dropdown_li[i].textContent = arr_p[i];
-					$dropdown_li[i].addEventListener('mousedown', dropdown_li_mousedown, false); // mousedown damit früher gefeuert wird als input focusout
+					$dropdown_li[i].addEventListener('mouseup', dropdown_li_mouseup, false);
 					$dropdown_ul.appendChild($dropdown_li[i]);
 				}
 
@@ -1584,8 +1584,8 @@
 
 		},
 
-		// schließen
-		dropdown_input_focusout = () => {
+		// schließen --------------------------------------------------------
+		dropdown_close = () => {
 			$dropdown_input.value = arr_p[p_cid];
 			$dropdown_input.opened = false;
 			$dropdown_li = [];
@@ -1593,7 +1593,23 @@
 			$dropdown_ul.className = 'hide';
 		},
 
-		// filter
+		// input focusout + doc mouseup --------------------------------------------------------
+
+		// input focusout
+		dropdown_input_focusout = () => {
+			document.addEventListener('mouseup', dropdown_doc_mouseup, false); // Sobald der Focus den input verlässt, in "dropdown_doc_mouseup()" prüfen wohin der nächste Klick geht
+		},
+
+		dropdown_doc_mouseup = (e) => {
+
+			// Auf property 'l_id' prüfen, die nur bei den Dropdown li's definiert ist (s.o.). Wenn nicht vorhanden, handelt es sich um ein anderes Element (Dropdown schließen)
+			if(e.target.l_id === undefined) dropdown_close();
+
+			document.removeEventListener('mouseup', dropdown_doc_mouseup, false); // unbind self
+
+		},
+
+		// dropdown filter --------------------------------------------------------
 		dropdown_input_keyup = (e) => {
 
 			e.preventDefault();
@@ -1625,29 +1641,38 @@
 
 		// btn add click ________________________________________________________________________________________________________________
 		btn_add_click = () => {
-			add_color(true, true, c_cid); // true = new color,  true = new color
+			add_colors(true, true, c_cid, false); // true = new color, true = new color, insert-pos
 		},
 
 		// btn add click ________________________________________________________________________________________________________________
 		btn_restore_click = () => {
-			dialogbox('restore', true, confirm => {
+			dialogbox('Restore?', true, confirm => {
 				if (confirm === true){
-
+					
+					// ähnlich wie vscode message 'refresh' ganz unten!
+					
 					reset_current_palette();
 
-					// restore arrays
-					arr_n = arr_n_restore.slice();
-					arr_c = arr_c_restore.slice();
-					c_len = c_len_restore;
-
-					// re-init
-					create_color_wrappers(0,c_len);
-
-					// dynamic scroll?
-					if (c_len > dynamic_scroll_limit) init_dynamic_scroll();
-
-					// filtern?
-					if(filter_open === 1 && filter_val !== '') filter_colors();
+					if(c_len_restore > 0){
+						
+						// restore arrays
+						arr_n = arr_n_restore.slice();
+						arr_c = arr_c_restore.slice();
+						c_len = c_len_restore;
+	
+						// re-init
+						create_color_wrappers(0,c_len);
+	
+						// gefiltert
+						if(filter_open === 1){
+							filter_colors(); // aktiviert selbstständig dynamic scroll wenn nötig!
+						}
+						// nicht gefiltert
+						else{
+							if(mode_current !== 'insert-floatview' && c_len > dynamic_scroll_limit) init_dynamic_scroll(); // list-view dynamic scroll aktivieren?
+						}
+						
+					}
 
 				}
 			});
@@ -1663,7 +1688,7 @@
 		// btn random click ________________________________________________________________________________________________________________
 		btn_random_click = () => {
 
-			dialogbox('randomize', true, confirm => {
+			dialogbox('Randomize?', true, confirm => {
 				if (confirm === true){
 
 					for (i = 0; i < c_len; i++) {
@@ -1672,7 +1697,7 @@
 						arr_b[i] = arr_c[i];
 					}
 
-					refresh_color_wrappers();
+					refresh_color_wrappers(0);
 
 				}
 			});
@@ -1722,23 +1747,23 @@
 
 					// hex(a)
 					if(check_result >= 1 && check_result <= 4){
-						arr_hsl.push(rgba_to_hsla( hex_to_rgba(arr_c[i], false) )); // hex_to_rgba: true = return string, false = return array
+						arr_hsl[i] = rgba_to_hsla( hex_to_rgba(arr_c[i], false) ); // hex_to_rgba: true = return string, false = return array
 					}
 					// rgb(a)
 					else if(check_result === 5 || check_result === 6){
-						arr_hsl.push(rgba_to_hsla( str_rgba_hsla_to_arr(arr_c[i]) ));
+						arr_hsl[i] = rgba_to_hsla( str_rgba_hsla_to_arr(arr_c[i]) );
 					}
 					// hsl(a)
 					else if(check_result === 7 || check_result === 8){
-						arr_hsl.push(str_rgba_hsla_to_arr(arr_c[i]));
+						arr_hsl[i] = str_rgba_hsla_to_arr(arr_c[i]);
 					}
 					// css color
 					else if(check_result === 9){
-						arr_hsl.push(rgba_to_hsla(hex_to_rgba( css_to_hex(arr_c[i]), false )) );  // hex_to_rgba: true = return string, false = return array
+						arr_hsl[i] = rgba_to_hsla(hex_to_rgba( css_to_hex(arr_c[i]), false ));  // hex_to_rgba: true = return string, false = return array
 					}
 					// false oder gradient
 					else{
-						arr_hsl.push([-1]); // -1, da hue zwischen 0 und 360 liegt (s.u.)
+						arr_hsl[i] = [-1]; // -1, da hue zwischen 0 und 360 liegt (s.u.)
 					}
 
 				}
@@ -1775,8 +1800,8 @@
 
 			// aktualisieren
 			if(sort === true){
-				refresh_color_wrappers(); // inputs und spans aktualisieren
-				if (filter_open === 1) filter_colors(); // hide-Klassen neu setzen			
+				refresh_color_wrappers(0); // inputs und spans aktualisieren
+				if (filter_open === 1) filter_colors(); // hide-Klassen neu setzen
 			}
 
 		},
@@ -1904,7 +1929,7 @@
 		// btn save click (global für shortcuts) ________________________________________________________________________________________________________________
 		window.btn_save_click = () => {
 
-			dialogbox('save', true, confirm => {
+			dialogbox('Save?', true, confirm => {
 				if (confirm === true){
 					vscode.postMessage({ // ███ vscode APi ███
 						command: 'save_palette', // -> extension.js -> 'save_palette_success()' (s.u.)
@@ -1923,7 +1948,8 @@
 		window.$btn_filter = document.createElement('p');
 		window.$filter_wrapper = document.createElement('div');
 		window.$filter_input = document.createElement('input');
-		window.$statusbar = document.createElement('div');
+		window.$sb_counter = document.createElement('span');
+		window.$sb_active = document.createElement('span');
 
 		// start create_controls ___________________________________________________________________________________________________________________
 
@@ -2091,7 +2117,6 @@
 
 		$el = null;
 
-
 		// zusammenbauen --------------------------------------------
 
 		$edit_btn_wrapper.appendChild($float_wrapper);
@@ -2105,22 +2130,26 @@
 		$main_wrapper.appendChild($controls_wrapper);
 
 		// statusbar
-
-		$statusbar.id = 'statusbar';
-		$main_wrapper.appendChild($statusbar);
-
+		$el = document.createElement('div');
+		$el.id = 'statusbar';
+		$sb_active.title = 'scroll to active';
+		$sb_active.addEventListener('click', scroll_to_active, false);
+		$el.appendChild($sb_counter);
+		$el.appendChild($sb_active);
+		$main_wrapper.appendChild($el);
 
 	},
 
 	// filter █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
-	toggle_filter = (refresh_color_wrappers) => {
+	toggle_filter = (refresh) => {
 
 		// filter input einblenden
 		if(filter_open === 0){
 			filter_open = 1;
 			$filter_wrapper.className = '';
 			$btn_filter.className = 'active';
+			was_filtered = false;
 			$filter_input.focus();
 		}
 		// filter input ausblenden / Filterung aufheben
@@ -2137,33 +2166,28 @@
 			}
 			else{
 
-				if(refresh_color_wrappers === true){
+				if(refresh === true){
 
 					if(filtered_ids_len < c_len) reset_wrappers();
 
 					if(c_len > dynamic_scroll_limit){
-						
-						// Dynamic Scroll Abmessungen bereits ermittelt? Dieser Fall tritt ein, wenn die Extension im floatview und im gefilterten Zustand geöffnet 
+
+						// Dynamic Scroll Abmessungen bereits ermittelt? Dieser Fall tritt ein, wenn die Extension im floatview und im gefilterten Zustand geöffnet
 						// wird und dann auf listview gewechselt wurde. In diesem Fall sind die für dynamic scroll erforderlichen Abmessungen noch nicht gemacht.
 						if (color_wrapper_height === 0) dynamic_scroll_get_values();
-						
+
 						// zum Anfang scrollen
 						window.scrollTo(0,0);
-						scroll_y_mem = 0;
+						scroll_y_pos = 0;
 						visible_index_start_mem = 0;
 						visible_index_end_mem = current_visible_wrappers * 3;
 
 						for (i = 0; i < c_len; i++) $color_wrappers[i].className = i > visible_index_end_mem ? 'hide' : 'color-wrapper';
 
-						if(c_cid !== -1 && c_cid < visible_index_end_mem) $color_wrappers[c_cid].className = 'color-wrapper active'; // falls active-Klasse oben überschrieben wurde
-
 						$main_wrapper.style.padding = '0 0 ' + ((c_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
 
 						if(dynamic_scroll_is_active === false) dynamic_scroll_bind_listener(); // scroll-listener wurde während der Filterung entfernt (neu binden)
 
-					}
-					else{
-						if(c_cid !== -1) $color_wrappers[c_cid].className = 'color-wrapper active'; // falls active-Klasse oben überschrieben wurde
 					}
 
 				}
@@ -2176,11 +2200,14 @@
 			arr_filtered_ids = [];
 			filtered_ids_len = 0;
 
+			was_filtered = false;
+
 			$btn_filter.className = '';
 			$filter_wrapper.className = 'hide';
 			$filter_input.value = '';
 
-			set_statusbar_text();
+			set_statusbar_counter();
+			set_statusbar_active();
 
 		}
 
@@ -2193,13 +2220,27 @@
 	// filter colors _____________________________________________________________________
 	filter_colors = () => {
 
+		// erster Filterdurchlauf: roten Auswahlrahmen bzw. active-Klasse von aktueller c_cid entfernen, sonst sind nach der Filterung
+		// u.U. 2 rote Rahmen vorhanden, da die c_cid unten im Suchlauf ggf. auf -1 gesetzt wird
+		if(init === false){ // beim Öffnen aber weiterhin markieren (nur wenn user manuell filtert)!
+			
+			if(was_filtered === false){
+				was_filtered = true;
+				if(c_cid !== -1){
+					$color_inp_wrappers[c_cid].className = ''; // active Klasse entfernen
+					c_cid = -1;
+				}
+			}
+			
+		}
+
 		filter_val = $filter_input.value.toLowerCase();
 
 		// grundsätzlich zum Anfang scrollen
 		window.scrollTo(0,0);
 
 		if(dynamic_scroll_is_active === true){
-			scroll_y_mem = 0;
+			scroll_y_pos = 0;
 			visible_index_start_mem = 0;
 			visible_index_end_mem = current_visible_wrappers * 3;
 		}
@@ -2249,14 +2290,14 @@
 				// nur bis 'visible_index_end_mem', da ja ganz nach oben gescrollt wurde ! s.o.
 				for (i = 0; i < visible_index_end_mem; i++){
 					$color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
-					if(c_cid !== -1 && c_cid === arr_filtered_ids[i]) $color_wrappers[arr_filtered_ids[i]].classList.add('active');
 				}
 
 				// dynamic scroll momentan aktiv?
-				if(dynamic_scroll_is_active === false){
-					dynamic_scroll_bind_listener();
-					$main_wrapper.style.padding = '0 0 ' + ((filtered_ids_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
-				}
+				if(dynamic_scroll_is_active === false) dynamic_scroll_bind_listener();
+
+
+				// padding ausgleichen
+				$main_wrapper.style.padding = '0 0 ' + ((filtered_ids_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
 
 			}
 			else{
@@ -2266,7 +2307,6 @@
 				if(filtered_ids_len !== 0){
 					for (i = 0; i < filtered_ids_len; i++) {
 						$color_wrappers[arr_filtered_ids[i]].className = 'color-wrapper';
-						if(c_cid !== -1 && c_cid === arr_filtered_ids[i]) $color_wrappers[arr_filtered_ids[i]].classList.add('active');
 					}
 				}
 
@@ -2274,7 +2314,8 @@
 
 		}
 
-		set_statusbar_text();
+		set_statusbar_counter();
+		set_statusbar_active();
 
 		store_webview_state();
 
@@ -2314,7 +2355,7 @@
 			// leer, existiert bereits, illegale chars ?
 			if(pm_check_filename(fname) === false) return;
 
-			dialogbox('save', true, confirm => {
+			dialogbox('Save?', true, confirm => {
 				if (confirm === true){
 
 					// add
@@ -2360,7 +2401,7 @@
 			// leer, existiert bereits, illegale chars ?
 			if(pm_check_filename(fname) === false) return;
 
-			dialogbox('rename', true, confirm => {
+			dialogbox('Rename?', true, confirm => {
 				if (confirm === true){
 					vscode.postMessage({ // ███ vscode APi ███
 						command: 'rename_palette', // -> extension.js -> 'rename_palette_success()' (s.u.)
@@ -2380,13 +2421,13 @@
 			// prüfen ob Dateiname bereits existiert
 			for (i = 0; i < p_len; i++) {
 				if(fname.toLowerCase() === arr_p[i].toLowerCase()){
-					dialogbox('exists', false, confirm => {});
+					dialogbox('Not possible! Name already exists!', false, confirm => {});
 					return false;
 				}
 			}
 
 			if (fname.match(/[\\\\/:*?\'<>|]/g)) {
-				dialogbox('illegal-char', false, confirm => {});
+				dialogbox('Not possible! These chars are not allowed: \\ / : * ? " < > | ', false, confirm => {});
 				return false;
 			}
 
@@ -2399,7 +2440,7 @@
 
 			const t_id = e.currentTarget.parentNode.t_id;
 
-			dialogbox('delete', true, confirm => {
+			dialogbox('Delete?', true, confirm => {
 				if (confirm === true){
 
 					pm_remove_list_wrapper_id = t_id; // siehe "delete_palette_success"
@@ -2536,14 +2577,14 @@
 	},
 
 	// dialogbox █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	dialogbox = (pseudo_class_content, show_cancel, callback_function) => {
+	dialogbox = (text, show_cancel, callback_function) => {
 
 		const dib_click_ok = () => {
 			callback_function(true);
 			dib_close();
 		},
 
-		dib_doc_keydown = (e) => {
+		dib_keydown_dynamic_scroll = (e) => {
 			if( e.keyCode === 9 ) e.preventDefault();// tab
 			else if( e.keyCode === 13 ) dib_click_ok(); // enter
 			else if( e.keyCode === 27 ) { // esc
@@ -2553,7 +2594,7 @@
 		},
 
 		dib_close = () => {
-			document.removeEventListener('keydown', dib_doc_keydown, false); // unbind
+			document.removeEventListener('keydown', dib_keydown_dynamic_scroll, false); // unbind
 			$main_wrapper.removeChild($dib_wrapper);
 			$el_active.focus(); // Fokus zurücksetzen
 			document.addEventListener("keypress", doc_keypress, false); // globale shortcuts wiederherstellen
@@ -2572,12 +2613,14 @@
 
 		$dib_wrapper.id = 'dib-wrapper';
 
-		// pseudo text (siehe css)
-		$dib_wrapper_inner.className = pseudo_class_content;
+		// text
+		$el = document.createElement('span');
+		$el.textContent = text;
+		$dib_wrapper_inner.appendChild($el);
 
 		// ok
-		$el = document.createElement('p');
-		$el.addEventListener('mousedown', dib_click_ok, false);
+		$el = document.createElement('p'); // Text siehe css (pseudo-Text 'OK')
+		$el.addEventListener('click', dib_click_ok, false);
 		$dib_wrapper_inner.appendChild($el);
 
 		// cancel
@@ -2588,8 +2631,8 @@
 				dib_close();
 			};
 
-			$el = document.createElement('p');
-			$el.addEventListener('mousedown', dib_click_cancel, false);
+			$el = document.createElement('p');  // Text siehe css (pseudo-Text 'Cancel')
+			$el.addEventListener('click', dib_click_cancel, false);
 			$dib_wrapper_inner.appendChild($el);
 		}
 
@@ -2602,169 +2645,306 @@
 		$el_active.blur(); // Wichtig! Fokus auf aktivem Element entfernen, sonst werden ggf. Key-Events gefeuert wenn der focus auf einem input verbleibt!
 
 		setTimeout(() => { // trotz blur ist timeout nötig
-			document.addEventListener('keydown', dib_doc_keydown, false); // Keydown!!! Sonst Überschneidung mit  Palette Manager Inputs!
+			document.addEventListener('keydown', dib_keydown_dynamic_scroll, false); // Keydown!!! Sonst Überschneidung mit  Palette Manager Inputs!
 		}, 0);
 
 	},
 
-	// create_color_wrappers █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	create_color_wrappers = (loop_start, loop_stop) => {
+	// color wrapper █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	
+	// die nachfolgenden Funktionen stehen alle im Zusammenhang mit den color wrappern und werden unter "create_color_wrappers" zugwiesen (s.u.) 
 
-		// colorwrapper_mousedown _______________________________________________________________________________________________
-		const colorwrapper_focusin = (e) => {
-			if(c_cid !== -1) $color_wrappers[c_cid].className = 'color-wrapper'; // init oder re-init
-			c_cid = e.currentTarget.wid;
-			$color_wrappers[c_cid].className = 'color-wrapper active';
-			store_webview_state(); // "c_cid" aktualisieren!
-		},
+	// main colorwrapper mousedown _______________________________________________________________________________________________
+	colorwrapper_main_mousedown = (e) => {
 
-		// colorwrapper_colorspan_click ______________________________________________________________________________________________
-		colorwrapper_colorspan_click = () => {
+		// Rechtsklick
+		if((e.which && e.which === 3) || (e.button && e.button === 2)){
+			context_is_open = true;
+		}
+		// Linksklick
+		else{
+			if(ctrl_key === false && shift_key === false && sel_len > 0) reset_selection(true);
+			context_is_open = false;
+		}
+		
+	},
 
-			const colorval = arr_c[c_cid]; // "c_cid" wird kurz zuvor unter "colorwrapper_mousedown()" ermittelt
+	// colorwrapper_mouseup _______________________________________________________________________________________________
+	colorwrapper_mouseup = (e) => {
 
-			vscode.postMessage({ // ███ vscode APi ███
-				command: 'insert',
-				colorval: colorval
-			})
+		// Info! // reset selection siehe "colorwrapper_main_mousedown()"
 
-			// insert-Animation
+		// Contextmenü: Rechtsklick auf einzelnen wrapper erlauben (nur abbrechen wenn mehrere markiert)
+		if(context_is_open === true && sel_len > 0) return; // ███ return ███
 
-			if(current_ani_id !== c_cid){
-				current_ani_id = c_cid;
-				$color_wrappers[c_cid].className = 'color-wrapper active ani-insert';
+		let set_c_cid = -1;
+		
+		// einfacher Klick --------------------------------------------------------------------------------------------------------------
+		if(ctrl_key === false && shift_key === false){
+			if(c_cid !== -1) $color_inp_wrappers[c_cid].className = ''; // alten Auswahlrahmen entfernen
+			set_c_cid = e.currentTarget.wid;
+		}
+		// ctrl | shift --------------------------------------------------------------------------------------------------------------
+		else{
+			
+			if(sort_mode === true){
+				dialogbox('Multiple selections not possible in sort mode!', false, confirm => {});
+				return; // ███ return ███
 			}
-			// mehrfacher Click auf gleichen wrapper
+
+			const sel_id = e.currentTarget.wid;
+
+			// ctrl ---------------------------------------------------------
+			if(ctrl_key === true){
+					
+				// ausgewählter wrapper entspricht c_cid -> demarkieren
+				if(sel_id === c_cid){
+					$color_inp_wrappers[c_cid].className = '';
+					c_cid = -1;
+					store_webview_state(); // "c_cid" aktualisieren!
+				}
+				else{
+					
+					// prüfen ob bereits markiert
+					const sel_pos = arr_sel_ids.indexOf(sel_id);
+					
+					// wrapper war nicht markiert ------
+					if(sel_pos === -1){
+						
+						// active oder selected-Klasse?
+						if(c_cid === -1){ // c_cid nicht vorhanden -> active-Klasse hinzufügen
+							set_c_cid = sel_id; // s.u.
+						}
+						
+						else{ // c_cid vorhanden -> selected-Klasse hinzufügen
+							arr_sel_ids[sel_len] = sel_id;
+							sel_len++;
+							$color_inp_wrappers[sel_id].className = 'selected';
+						}
+						
+					}
+					// wrapper war bereits markiert ------
+					else{ 
+						// selection entfernen
+						arr_sel_ids.splice(sel_pos, 1); 
+						sel_len--;
+						$color_inp_wrappers[sel_id].className = '';
+					}
+
+				}
+
+			}
+			// shift ---------------------------------------------------------
 			else{
-				$color_wrappers[c_cid].className = 'color-wrapper active'; // Animationsklasse entfernen
-				setTimeout(() => {
-					$color_wrappers[c_cid].className = 'color-wrapper active ani-insert'; // Animationsklasse erneut hinzufügen
-				}, 0);
+
+				let loop_start = 0,
+					loop_end = 0,
+					skip_loop = false;
+
+				// c_cid vorhanden ------
+				if (c_cid !== -1) {
+					
+					// sel_id unterhalb von c_cid
+					if(sel_id > c_cid){
+						loop_start = filter_open === 0 ? c_cid + 1 : arr_filtered_ids.indexOf(c_cid) + 1;
+						loop_end = filter_open === 0 ? sel_id : arr_filtered_ids.indexOf(sel_id);
+					}
+					// sel_id oberhalb von c_cid
+					else if(sel_id < c_cid){
+						loop_start = filter_open === 0 ? sel_id : arr_filtered_ids.indexOf(sel_id);
+						loop_end = filter_open === 0 ? c_cid - 1 : arr_filtered_ids.indexOf(c_cid) - 1;
+					}
+					else{ // sel_id === id_first (nichts machen)
+						skip_loop = true;
+					}
+
+				}
+				// keine c_cid ------
+				else{
+
+					// keine Selection (Start bei erstem wrapper / Ende bei sel_id)
+					if(sel_len === 0){
+						loop_start = 0; // gefiltert ebenfalls 0 (siehe loop unten)
+						loop_end = filter_open === 0 ? sel_id - 1 : arr_filtered_ids.indexOf(sel_id) - 1;
+						set_c_cid = sel_id; // aktiven wrapper setzen
+					}
+					// Selection vorhanden
+					else{
+
+						// sortieren um höchste und niedrigste id zu ermitteln
+						if(sel_len > 1) arr_sel_ids.sort(function(a, b){return a-b});
+
+						let id_first = filter_open === 0 ? arr_sel_ids[0] : arr_filtered_ids.indexOf(arr_sel_ids[0]);
+						
+						// sel_id unterhalb von erstem selektierten wrapper
+						if(sel_id > id_first){
+							loop_start = id_first + 1;
+							loop_end = filter_open === 0 ? sel_id : arr_filtered_ids.indexOf(sel_id);
+						}
+						// sel_id oberhalb von erstem selektierten wrapper
+						else if(sel_id < id_first){
+							loop_start = filter_open === 0 ? sel_id : arr_filtered_ids.indexOf(sel_id);
+							loop_end = id_first - 1;
+						}
+						else{ // sel_id === id_first (nichts machen)
+							skip_loop = true;
+						}
+						
+						set_c_cid = id_first; // aktiven wrapper setzen
+	
+
+					}
+
+				}
+				
+				// alte Auswahl entfernen + sel array reset
+				reset_selection(true); 
+				
+				// neue Auswahl markieren
+				if(skip_loop === false){
+					
+					if(filter_open === 0){ // ohne Filter
+						for (i = loop_start; i <= loop_end; i++) {
+							$color_inp_wrappers[i].className = 'selected';
+							arr_sel_ids[sel_len] = i;
+							sel_len++;
+						}
+					}
+					else{ // Filter
+						for (i = loop_start; i <= loop_end; i++) {
+							$color_inp_wrappers[arr_filtered_ids[i]].className = 'selected';
+							arr_sel_ids[sel_len] = arr_filtered_ids[i];
+							sel_len++;
+						}
+					}
+					
+				}
+				
 			}
 
-		},
+		}
+		
+		// c_cid setzen
+		if(set_c_cid !== -1){
+			c_cid = set_c_cid;
+			$color_inp_wrappers[c_cid].className = 'active';
+			store_webview_state(); // "c_cid" aktualisieren!
+			set_statusbar_active();
+		}
 
-		// colorwrapper_switch_click ______________________________________________________________________________________________
-		colorwrapper_switch_click = () => {
+	},
 
-			const switched_color = switch_color_system(arr_c[c_cid]);
+	// colorwrapper mousedown _______________________________________________________________________________________________
+	colorwrapper_mousedown = (e) => {
+		// Verhindern, dass "colorwrapper_input_focusin()" nochmal die c_cid überprüft wenn auf einen input geklickt wurde (nicht tragisch, aber muss nicht sein)
+		if(e.target.tagName.toLowerCase() === "input" ) prevent_inp_focusin = true;
+		
+		// siehe doc_keydown()
+		if (ctrl_combo === true) {
+			ctrl_combo = false;
+			ctrl_key = false;
+			shift_key = false;
+			$color_wrapper_main.classList.remove('multi-select');
+		}
+		
+	},
 
-			if(switched_color !== false){
-				arr_c[c_cid] = switched_color;
-				$color_inputs_c[c_cid].value = switched_color;
-			}
+	// focusin beide inputs  ______________________________________________________________________________________________
+	colorwrapper_input_focusin = (e) => {
 
-		},
+		//Info! Dient nur zur Navigation mit tab-Taste! Wenn tab in einen neuen wrapper springt muss dieser als aaktiv markiert werden
 
-		// name-input ______________________________________________________________________________________________
-		colorwrapper_input_n_focusout = () => {
-			if(c_cid !== -1) cw_input_n_check(c_cid); // wird z.B. auch gefeuert wenn man eine andere Palette lädt (daher auf -1 prüfen)
-		},
+		// siehe "colorwrapper_mousedown()"
+		if(prevent_inp_focusin === true){
+			prevent_inp_focusin = false;
+			return;
+		}
 
-		colorwrapper_input_n_keyup = () => {
-			cw_input_n_check(c_cid);
-		},
+		this_wid = e.currentTarget.wid;
+		if(this_wid !== c_cid){
+			if(c_cid !== -1) $color_inp_wrappers[c_cid].className = ''; // alten Auswahlrahmen entfernen
+			c_cid = this_wid;
+			$color_inp_wrappers[c_cid].className = 'active';
+			store_webview_state(); // "c_cid" aktualisieren!
+		}
 
-		cw_input_n_check = (id) => {
-			let val = $color_inputs_n[id].value;
-			val = val.indexOf(":") !== -1 ? val.replace(/\:/g, ".") : val; // Doppelpunkt nicht erlaubt (siehe settings-Datei)
-			arr_n[id] = val; // array aktualisieren
-		},
+	},
 
-		// color-input ______________________________________________________________________________________________
-		colorwrapper_input_c_focusout = (e) => {
-			if(c_cid !== -1) cw_input_c_check(e.currentTarget.parentNode.parentNode.wid); // hier kann nicht mit 'c_cid' gearbeitet werden, da focusin eher gefeuert wird und die 'c_cid' aktualisiert (s.o.)
-		},
+	// colorwrapper_colorspan_click ______________________________________________________________________________________________
+	colorwrapper_colorspan_click = () => {
+		if(context_is_open === true) return;
 
-		colorwrapper_input_c_keyup = (e) => {
-			if(e.keyCode === 13) cw_input_c_check(c_cid);
-		},
+		const colorval = arr_c[c_cid]; // "c_cid" wird kurz zuvor unter "colorwrapper_mouseup()" ermittelt
 
-		cw_input_c_check = (id) => {
-			const val = $color_inputs_c[id].value.trim();
-			arr_b[id] = check_color(val) === false ? color_error_bg : val;
-			arr_c[id] = val;
-			$color_spans[id].style.background = arr_b[id];
-		};
+		vscode.postMessage({ // ███ vscode APi ███
+			command: 'insert',
+			colorval: colorval
+		})
 
-		// drag drop ________________________________________________________________________________________________________________________
+		// insert-Animation
+		if(current_ani_id !== c_cid){
+			current_ani_id = c_cid;
+			$color_wrappers[c_cid].className = 'color-wrapper ani-insert';
+		}
+		// mehrfacher Click auf gleichen wrapper
+		else{
+			$color_wrappers[c_cid].className = 'color-wrapper'; // Animationsklasse entfernen
+			setTimeout(() => {
+				$color_wrappers[c_cid].className = 'color-wrapper ani-insert'; // Animationsklasse erneut hinzufügen
+			}, 0);
+		}
 
-		// global, falls Color Manager im Sort-Modus geschlossen wird und dann erneut geöffnet wird, müssen die Drag-Funktionen
-		// sofort verfügbar sein. Zum Zweiten muss "btn_mode_click" unter "create_controls" Zugriff haben.
+	},
 
-		window.drag = false;
-		window.$el_drag = null;
-		window.$el_hover = null;
-		window.drag_id = 0;
-		window.hover_id = 0;
+	// colorwrapper_switch_click ______________________________________________________________________________________________
+	colorwrapper_switch_click = () => {
+		if(context_is_open === true) return;
 
-		window.colorwrapper_drag_mousedown = (e) => {
+		const switched_color = switch_color_system(arr_c[c_cid]);
+		if(switched_color !== false){
+			arr_c[c_cid] = switched_color;
+			$color_inputs_c[c_cid].value = switched_color;
+		}
 
-			drag = true;
-			$el_drag = e.currentTarget;
-			$el_hover = $el_drag;
-			drag_id = $el_drag.wid;
+	},
 
-			for (i = 0; i < c_len; i++) { $color_wrappers[i].addEventListener('mouseenter', colorwrapper_drag_mouseenter, false); }
-			document.addEventListener('mouseup', colorwrapper_drag_doc_mouseup, false);
+	// name-input ______________________________________________________________________________________________
+	colorwrapper_input_n_focusout = () => {
+		if(context_is_open === true) return;
+		if(c_cid !== -1) cw_input_n_check(c_cid); // wird z.B. auch gefeuert wenn man eine andere Palette lädt (daher auf -1 prüfen)
+	},
 
-			if(c_cid !== -1) $color_wrappers[c_cid].className = 'color-wrapper'; // 'active' entfernen init oder re-init
+	colorwrapper_input_n_keyup = () => {
+		cw_input_n_check(c_cid);
+	},
 
-			$el_drag.className = 'color-wrapper active drag-element';
-			c_cid = drag_id;
+	cw_input_n_check = (id) => {
+		let val = $color_inputs_n[id].value;
+		val = val.indexOf(":") !== -1 ? val.replace(/\:/g, ".") : val; // Doppelpunkt nicht erlaubt (siehe settings-Datei)
+		arr_n[id] = val; // array aktualisieren
+	},
 
-		};
+	// color-input ______________________________________________________________________________________________
+	colorwrapper_input_c_focusout = (e) => {
+		if(context_is_open === true) return;
+		if(c_cid !== -1) cw_input_c_check(c_cid); // hier kann nicht mit 'c_cid' gearbeitet werden, da focusin eher gefeuert wird und die 'c_cid' aktualisiert (s.o.)
+		//if(c_cid !== -1) cw_input_c_check(e.currentTarget.parentNode.parentNode.wid); // hier kann nicht mit 'c_cid' gearbeitet werden, da focusin eher gefeuert wird und die 'c_cid' aktualisiert (s.o.)
+	},
 
-		window.colorwrapper_drag_mouseenter = (e) => {
+	colorwrapper_input_c_keyup = (e) => {
+		if(e.keyCode === 13) cw_input_c_check(c_cid);
+	},
 
-			hover_id = e.currentTarget.wid;
+	cw_input_c_check = (id) => {
+		const val = $color_inputs_c[id].value.trim();
+		arr_b[id] = check_color(val) === false ? color_error_bg : val;
+		arr_c[id] = val;
+		$color_spans[id].style.background = arr_b[id];
+	},
 
-			$color_spans[drag_id].style.background = arr_b[hover_id];
-			$color_inputs_n[drag_id].value         = arr_n[hover_id];
-			$color_inputs_c[drag_id].value         = arr_c[hover_id];
+	// create_color_wrappers ________________________________________________________________________________________________________________________
 
-			$color_spans[hover_id].style.background = arr_b[drag_id];
-			$color_inputs_n[hover_id].value         = arr_n[drag_id];
-			$color_inputs_c[hover_id].value         = arr_c[drag_id];
-
-			// Dreieckstausch
-			const 	tmp_c = arr_c[drag_id],
-					tmp_n = arr_n[drag_id],
-					tmp_b = arr_b[drag_id];
-
-			arr_c[drag_id]  = arr_c[hover_id];
-			arr_n[drag_id]  = arr_n[hover_id];
-			arr_b[drag_id]  = arr_b[hover_id];
-
-			arr_c[hover_id] = tmp_c;
-			arr_n[hover_id] = tmp_n;
-			arr_b[hover_id] = tmp_b;
-
-			$el_drag.className = 'color-wrapper';
-
-			$el_hover = e.currentTarget;
-			$el_hover.className = 'color-wrapper active drag-element';
-
-			$el_drag = $el_hover; // !!!
-
-			drag_id = hover_id;
-			c_cid = hover_id;
-
-
-		};
-
-		window.colorwrapper_drag_doc_mouseup = () => {
-			drag = false;
-			for (i = 0; i < c_len; i++) { $color_wrappers[i].removeEventListener('mouseenter', colorwrapper_drag_mouseenter, false); }
-			document.removeEventListener('mouseup', colorwrapper_drag_doc_mouseup, false);
-			$el_drag.className = 'color-wrapper active';
-		};
-
-		let $input_wrapper = null,
-			$color_delete_buttons = null,
-			current_ani_id = -1;
-
-		// Start create_color_wrappers ________________________________________________________________________________________________________________________
+	create_color_wrappers = (loop_start, loop_stop) => {
 
 		// list-view
 		if(mode_current !== 'insert-floatview'){
@@ -2777,7 +2957,7 @@
 		else{
 			var class_name = filter_open === 1 ? 'hide' : 'color-wrapper',
 				set_title = true;
-		}		
+		}
 
 		// ███ Init: create main-wrapper (append s.u.) ███
 		if(init === true){
@@ -2785,14 +2965,17 @@
 			// def window
 			window.$color_wrappers = [];
 			window.$color_spans = [];
+			window.$color_inp_wrappers = [];
 			window.$color_inputs_n = [];
 			window.$color_inputs_c = [];
 			window.$color_mode_switches = [];
 			window.$color_wrapper_main = document.createElement('div');
 
 			$color_wrapper_main.id = 'color-wrapper-main';
-			$color_wrapper_main.addEventListener('contextmenu', open_context, false);
 
+			$color_wrapper_main.addEventListener('contextmenu', open_context, false);
+			$color_wrapper_main.addEventListener('mousedown', colorwrapper_main_mousedown, false);
+			
 		}
 		else{
 			$main_wrapper.className = mode_current+" hide"; // ███ Performance s.u. ███
@@ -2805,8 +2988,8 @@
 			$color_wrappers[i] = document.createElement('div');
 			$color_wrappers[i].wid = i; // wid = wrapper-id
 			$color_wrappers[i].className = class_name;
-			$color_wrappers[i].setAttribute('tabindex', '0');
-			$color_wrappers[i].addEventListener('focusin', colorwrapper_focusin, false);
+			$color_wrappers[i].addEventListener('mousedown', colorwrapper_mousedown, false);
+			$color_wrappers[i].addEventListener('mouseup', colorwrapper_mouseup, false);
 			// sort mode aktiv? (siehe init)
 			if (sort_mode === true) $color_wrappers[i].addEventListener("mousedown", colorwrapper_drag_mousedown, false);
 			// floatview title-tooltip?
@@ -2816,14 +2999,18 @@
 			$color_spans[i].addEventListener('click', colorwrapper_colorspan_click, false);
 			$color_spans[i].style.background = arr_b[i];
 
-			$input_wrapper = document.createElement('div');
+			$color_inp_wrappers[i] = document.createElement('div');
 
 			$color_inputs_n[i] = document.createElement('input');
+			$color_inputs_n[i].wid = i; // wid = wrapper-id
+			$color_inputs_n[i].addEventListener('focusin', colorwrapper_input_focusin, false);
 			$color_inputs_n[i].addEventListener('focusout', colorwrapper_input_n_focusout, false);
 			$color_inputs_n[i].addEventListener('keyup', colorwrapper_input_n_keyup, false);
 			$color_inputs_n[i].value = arr_n[i];
 
 			$color_inputs_c[i] = document.createElement('input');
+			$color_inputs_c[i].wid = i; // wid = wrapper-id
+			$color_inputs_c[i].addEventListener('focusin', colorwrapper_input_focusin, false);
 			$color_inputs_c[i].addEventListener('focusout', colorwrapper_input_c_focusout, false);
 			$color_inputs_c[i].addEventListener('keyup', colorwrapper_input_c_keyup, false);
 			$color_inputs_c[i].value = arr_c[i];
@@ -2831,16 +3018,17 @@
 			$color_mode_switches[i] = document.createElement('p');
 			$color_mode_switches[i].addEventListener('click', colorwrapper_switch_click, false);
 
-			$color_delete_buttons = document.createElement('i');
-			$color_delete_buttons.addEventListener('click', delete_color, false);
+			// delete button <i>
+			$el = document.createElement('i');
+			$el.addEventListener('click', delete_colors, false);
 
 			// append
-			$input_wrapper.appendChild($color_inputs_n[i]);
-			$input_wrapper.appendChild($color_inputs_c[i]);
-			$input_wrapper.appendChild($color_mode_switches[i]);
-			$color_wrappers[i].appendChild($color_delete_buttons);
+			$color_inp_wrappers[i].appendChild($color_inputs_n[i]);
+			$color_inp_wrappers[i].appendChild($color_inputs_c[i]);
+			$color_inp_wrappers[i].appendChild($color_mode_switches[i]);
+			$color_wrappers[i].appendChild($el); // delete button <i>
 			$color_wrappers[i].appendChild($color_spans[i]);
-			$color_wrappers[i].appendChild($input_wrapper);
+			$color_wrappers[i].appendChild($color_inp_wrappers[i]);
 
 			$color_wrapper_main.appendChild($color_wrappers[i]);
 
@@ -2848,15 +3036,81 @@
 
 		// ███ Init: append main-wrapper ███
 		if(init === true){
-			if(c_cid !== -1 && c_cid < c_len) $color_wrappers[c_cid].className = class_name+' active'; // < c_len, falls User im Texteditor zwischenzeitlich Farben entfernt hat
+			if(c_cid !== -1 && c_cid < c_len) $color_inp_wrappers[c_cid].className = 'active'; // < c_len, falls User im Texteditor zwischenzeitlich Farben entfernt hat
+			set_statusbar_active();
 			$main_wrapper.appendChild($color_wrapper_main); // ███ document position 4 ███
 		}
 		else{
 			$main_wrapper.className = mode_current; // ███ Performance s.o. ███
 		}
 
-		if(filter_open === 0) set_statusbar_text(); // wird anderenfalls später durch die Filter-Funktion gemacht
+		if(filter_open === 0) set_statusbar_counter(); // wird anderenfalls später durch die Filter-Funktion gemacht
 
+	},
+	
+	// drag drop ________________________________________________________________________________________________________________________
+
+	colorwrapper_drag_mousedown = (e) => {
+
+		$el_drag = e.currentTarget;
+		$el_hover = $el_drag;
+		drag_id = $el_drag.wid;
+
+		for (i = 0; i < c_len; i++) { $color_wrappers[i].addEventListener('mouseenter', colorwrapper_drag_mouseenter, false); }
+		document.addEventListener('mouseup', colorwrapper_drag_doc_mouseup, false);
+
+		if(c_cid !== -1) $color_inp_wrappers[c_cid].className = ''; // 'active' entfernen init oder re-init
+
+		$el_drag.className = 'color-wrapper drag-element';
+		$color_inp_wrappers[drag_id].className = 'active';
+		c_cid = drag_id;
+
+	},
+
+	colorwrapper_drag_mouseenter = (e) => {
+
+		hover_id = e.currentTarget.wid;
+
+		$color_spans[drag_id].style.background = arr_b[hover_id];
+		$color_inputs_n[drag_id].value         = arr_n[hover_id];
+		$color_inputs_c[drag_id].value         = arr_c[hover_id];
+
+		$color_spans[hover_id].style.background = arr_b[drag_id];
+		$color_inputs_n[hover_id].value         = arr_n[drag_id];
+		$color_inputs_c[hover_id].value         = arr_c[drag_id];
+
+		// Dreieckstausch
+		const 	tmp_c = arr_c[drag_id],
+				tmp_n = arr_n[drag_id],
+				tmp_b = arr_b[drag_id];
+
+		arr_c[drag_id] = arr_c[hover_id];
+		arr_n[drag_id] = arr_n[hover_id];
+		arr_b[drag_id] = arr_b[hover_id];
+
+		arr_c[hover_id] = tmp_c;
+		arr_n[hover_id] = tmp_n;
+		arr_b[hover_id] = tmp_b;
+
+		$color_inp_wrappers[drag_id].className = '';
+		$color_inp_wrappers[hover_id].className = 'active';
+
+		$el_drag.className = 'color-wrapper';
+
+		$el_hover = e.currentTarget;
+		$el_hover.className = 'color-wrapper drag-element';
+
+		$el_drag = $el_hover; // !!!
+
+		drag_id = hover_id;
+		c_cid = hover_id;
+
+	},
+
+	colorwrapper_drag_doc_mouseup = () => {
+		for (i = 0; i < c_len; i++) { $color_wrappers[i].removeEventListener('mouseenter', colorwrapper_drag_mouseenter, false); }
+		document.removeEventListener('mouseup', colorwrapper_drag_doc_mouseup, false);
+		$el_drag.className = 'color-wrapper'; // drag-Klasse entfernen
 	},
 
 	// context menu  █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -2866,60 +3120,134 @@
 	},
 
 	open_context = (e) => {
-
+		
+		if(sort_mode === true){
+			dialogbox('Contextmenu not available in sort mode!', false, confirm => {});
+			return; // ███ return ███
+		}
+		
 		const context_open_picker = () => {
-			open_picker_external(2, arr_c[c_cid]);
-		},
-
-		context_add_click = () => {
-			if(empty_area_clicked === true && c_len > 0) add_color(true, true, c_len);
-			else add_color(true, true, c_cid);
-		},
-
-		context_duplicate_click = () => {
-			add_color(arr_n[c_cid], arr_c[c_cid], c_cid);
-		},
-
-		context_copy_click = () => {
-			cut_copy_mode = 1;  // 1 = copy | 2 = cut
-			arr_copy = [arr_n[c_cid], arr_c[c_cid], arr_b[c_cid]];
-		},
-
-		context_cut_click = () => {
-			cut_copy_mode = 2; // 1 = copy | 2 = cut
-			arr_copy = [arr_n[c_cid], arr_c[c_cid], arr_b[c_cid]];
-			delete_color();
-		},
-
-		context_paste_click = () => {
-			if(cut_copy_mode !== false){
-
-				// copy paste: 1
-				if(cut_copy_mode === 1){
-					arr_n[c_cid] = arr_copy[0];
-					arr_c[c_cid] = arr_copy[1];
-					arr_b[c_cid] = arr_copy[2];
-					$color_inputs_n[c_cid].value = arr_n[c_cid];
-					$color_inputs_c[c_cid].value = arr_c[c_cid];
-					$color_spans[c_cid].style.background = arr_b[c_cid];
-					if(mode_current === 'insert-floatview') $color_wrappers[c_cid].title = arr_n[c_cid] === arr_c[c_cid] ? arr_n[c_cid] : arr_n[c_cid]+': '+arr_c[c_cid];
-				}
-				// cut paste: 2
-				else{
-					if(empty_area_clicked === true && c_len > 0) add_color(arr_copy[0], arr_copy[1], c_len);
-					else add_color(arr_copy[0], arr_copy[1], c_cid);
-
-				}
-
+			if(c_cid !== -1){
+				open_picker_external(2, arr_c[c_cid]);
+			}
+			else{ // user hat c_cid mit ctrl deaktiviert
+				if(sel_len > 0) open_picker_external(2, arr_c[arr_sel_ids[0]]);
 			}
 		},
 
+		// add ------------------------------------
+		context_add_click = () => {
+			if(empty_area_clicked === true && c_len > 0) add_colors(true, true, c_len, true); // true = new color, true = new color, insert-pos
+			else add_colors(true, true, c_cid, false);
+		},
+
+		// duplicate ------------------------------------
+		context_duplicate_click = () => {
+
+			const 	arr_dup_ids = get_selected_ids(), // werden sortiert zurückgegeben!
+					dup_len = arr_dup_ids.length;
+
+			let arr_dup_n = [],
+				arr_dup_c = [];
+
+			for (i = 0; i < dup_len; i++) {
+				arr_dup_n[i] = arr_n[arr_dup_ids[i]];
+				arr_dup_c[i] = arr_c[arr_dup_ids[i]];
+			}
+
+			add_colors(arr_dup_n, arr_dup_c, arr_dup_ids[dup_len - 1] + 1, true);
+
+		},
+
+		// verwendet von copy und cut ------------------------------------
+		context_copy_cut_colors = () => {
+
+			// reset
+			if(copy_len > 0){
+				arr_copy_n = [];
+				arr_copy_c = [];
+			}
+
+			const arr_copy_ids = get_selected_ids(); // werden sortiert zurückgegeben!
+
+			copy_len = arr_copy_ids.length;
+
+			for (i = 0; i < copy_len; i++){
+				arr_copy_n[i] = arr_n[arr_copy_ids[i]];
+				arr_copy_c[i] = arr_c[arr_copy_ids[i]];
+			}
+
+		},
+
+		// copy ------------------------------------
+		context_copy_click = () => {
+			context_copy_cut_colors();
+		},
+
+		// cut ------------------------------------
+		context_cut_click = () => {
+			context_copy_cut_colors();
+			delete_colors();
+		},
+
+		// paste ------------------------------------
+		context_paste_click = () => {
+
+			let paste_pos = -1;
+
+			if(empty_area_clicked === true){
+				paste_pos = c_len;
+			}
+			else{
+
+				if (c_cid !== -1) {
+					paste_pos = c_cid;
+				}
+				else{
+					// c_cid vom user per ctrl deaktiviert (hinter höchster ausgewählter id einfügen)
+					const arr_sorted_sel_ids = get_selected_ids(); // werden sortiert zurückgegeben!
+					paste_pos = arr_sorted_sel_ids[sel_len - 1];
+				}
+			}
+
+			add_colors(arr_copy_n, arr_copy_c, paste_pos, true);
+
+		},
+
+		// select all ------------------------------------
+		context_select_all = () => {
+
+			if(sel_len > 0) reset_selection(false); // false: nur arrays zurücksetzen, Klassen können erhalten bleiben da sowieso alle markiert werden
+
+			if(filter_open === 0){
+				arr_sel_ids = [...Array(c_len)].map((_,i) => i + 0); // 0 fortlaufend hochzählen
+				sel_len = c_len;
+				for (i = 0; i < c_len; i++) $color_inp_wrappers[i].className = 'selected';
+
+			}
+			else{
+				arr_sel_ids = arr_filtered_ids;
+				sel_len = filtered_ids_len;
+				for (i = 0; i < filtered_ids_len; i++) $color_inp_wrappers[arr_filtered_ids[i]].className = 'selected';
+			}
+			
+			// c_cid entfernen sonst doppelt, siehe: get_selected_ids()
+			if(c_cid !== -1){
+				arr_sel_ids.splice(arr_sel_ids.indexOf(c_cid), 1); 
+				sel_len--;
+				$color_inp_wrappers[c_cid].className = 'active'; // neu setzen, da im loop mit 'selected' überschrieben
+			}
+
+		},
+
+		// mouseup / close ------------------------------------
 		context_doc_mouseup_keyup = () => {
-			document.removeEventListener('keyup', context_doc_mouseup_keyup, false);
+			document.removeEventListener('keyup', context_doc_mouseup_keyup, false); // unbind self
 			document.removeEventListener('mouseup', context_doc_mouseup_keyup, false);
 			document.body.removeChild($context_ul);
 		},
 
+		// Position? ------------------------------------
 		context_set_position = () => {
 			// y: -4 = Toleranz (sonst scrollbar im body / 2 würde eigentlich reichen)
 			$context_ul.style.top = e.clientY + context_height <= window_height ? e.clientY +'px' : window_height - context_height - 4 +'px';
@@ -2927,9 +3255,10 @@
 		};
 
 		// def window
-		if(typeof arr_copy === 'undefined'){
-			window.arr_copy = []; // [arr_n[c_cid], arr_c[c_cid], arr_b[c_cid]]
-			window.cut_copy_mode = false;  // false || 1 = copy | 2 = cut
+		if(typeof copy_len === 'undefined'){
+			window.copy_len = 0;
+			window.arr_copy_n = [];
+			window.arr_copy_c = [];
 		}
 
 		// leerer Bereich innerhalb von $color_wrapper_main angeklickt: nur cut/paste erlauben
@@ -2964,7 +3293,14 @@
 		// delete
 		$el = document.createElement('li');
 		$el.id = 'context-li-delete';
-		if(empty_area_clicked === false) $el.addEventListener('mouseup', delete_color, false);
+		if(empty_area_clicked === false) $el.addEventListener('mouseup', delete_colors, false);
+		else $el.className = 'context-li-disabled';
+		$context_ul.appendChild($el);
+
+		// select all
+		$el = document.createElement('li');
+		$el.id = 'context-li-select';
+		if((filter_open === 1 && filtered_ids_len > 0) || (filter_open === 0 && c_len > 0)) $el.addEventListener('mouseup', context_select_all, false);
 		else $el.className = 'context-li-disabled';
 		$context_ul.appendChild($el);
 
@@ -2985,10 +3321,10 @@
 		// paste
 		$el = document.createElement('li');
 		$el.id = 'context-li-paste';
-		if(empty_area_clicked === true && cut_copy_mode === 2 || empty_area_clicked === false && cut_copy_mode !== false) $el.addEventListener('mouseup', context_paste_click, false);
+		if(copy_len > 0) $el.addEventListener('mouseup', context_paste_click, false);
 		else $el.className = 'context-li-disabled';
-		if(cut_copy_mode !== false) $el.addEventListener('mouseup', context_paste_click, false);
 		$context_ul.appendChild($el);
+
 
 		$el = null;
 
@@ -3007,6 +3343,9 @@
 			context_set_position();
 			document.body.appendChild($context_ul);
 		}
+
+		// Fokus von aktivem Element entfernen
+		document.activeElement.blur();
 
 	},
 
@@ -3030,23 +3369,12 @@
 			}
 			// floatview aktiv
 			else{
-				// Floatview! Wenn die Extension im floatview geöffnet wird, und dann zur listview gewechselt wird, dann wird diese Funktion aufgerufen
-				// und im noch aktuellen floatview lässt sich natürlich die wrapper Höhe nicht messen, daher eine Kopie des ersten wrappers erstellen -
-				// diesen in einen temporären wrapper packen und diesem die edit-Klasse zuweisen. Somit lässt sich die wrapper-Höhe im listview ermitteln
-				// obwohl floatview noch aktiv ist
-
-				const 	$color_wrapper_clone = $color_wrappers[0].cloneNode(true),
-						$dummy_wrapper = document.createElement('div');
-
-				$color_wrapper_clone.className = 'color-wrapper'; // falls zufällig gefiltert war und der geklonte wrapper die hide-Klasse hatte
-				$dummy_wrapper.className = 'edit';
-
-				$dummy_wrapper.appendChild($color_wrapper_clone);
-				document.body.appendChild($dummy_wrapper); // hinzufügen
-				color_wrapper_height = $dummy_wrapper.offsetHeight; // Höhe messen
-				document.body.removeChild($dummy_wrapper); // wieder entfernen
+				// Wenn die Extension im floatview geöffnet wird, und dann zum listview mit dynamic scroll gewechselt wird, dann wird dem ersten wrapper kurzzeitig
+				// eine Klasse zugewiesen, die die scss-Variable "$wrapper_height" enthält und somit genau der Höhe der Listview-Wrapper entspricht!
+				$color_wrappers[0].classList.add('meassure-list-wrapper-height');
+				color_wrapper_height = $color_wrappers[0].offsetHeight; // Höhe messen
+				$color_wrappers[0].classList.remove('meassure-list-wrapper-height');
 			}
-
 
 		}
 
@@ -3063,6 +3391,7 @@
 	},
 
 	dynamic_scroll_bind_listener = () => {
+		document.addEventListener("keydown", doc_keydown_dynamic_scroll, false);
 		window.addEventListener('scroll', window_dynamic_scroll, false);
 		dynamic_scroll_is_active = true;
 	},
@@ -3073,9 +3402,9 @@
 		this.resize_to = setTimeout(() => {
 			dynamic_scroll();
 		}, 10);*/
-		
+
 		dynamic_scroll();
-		
+
 	},
 
 	dynamic_scroll = () => {
@@ -3083,7 +3412,7 @@
 		// Info! Es ist immer die dreifache Höhe der aktuell sichtbaren color-wrapper zu sehen, sonst würde man beim Scrollen das Einblenden sehen!
 		// alle anderen wrapper davor oder danach erhalten die hide-Klasse
 
-		const scroll_y = window.scrollY;
+		const scroll_y = window.scrollY; 
 
 		let visible_index_start = Math.floor(scroll_y / color_wrapper_height),
 			visible_index_end = 0,
@@ -3119,7 +3448,7 @@
 
 
 		// aufwärts -------------------------------------------------------------------------------------------------
-		if(scroll_y <= scroll_y_mem){
+		if(scroll_y <= scroll_y_pos){
 
 			const dif = visible_index_start_mem - visible_index_start;
 
@@ -3161,11 +3490,8 @@
 
 		}
 
-		// aktiver wrapper im sichtbaren Bereich? (falls obige Klassen-Änderung die "active"-Klasse überschrieben hat)
-		if(c_cid !== -1 && c_cid >= visible_index_start && c_cid <= visible_index_end) $color_wrappers[c_cid].className = 'color-wrapper active';
-
 		// vars aktualisieren
-		scroll_y_mem = scroll_y;
+		scroll_y_pos = scroll_y;
 		visible_index_start_mem = visible_index_start;
 		visible_index_end_mem = visible_index_end;
 
@@ -3181,6 +3507,7 @@
 
 	dynamic_scroll_remove = () => {
 		window.removeEventListener('scroll', window_dynamic_scroll, false);
+		document.removeEventListener("keydown", doc_keydown_dynamic_scroll, false);
 		dynamic_scroll_is_active = false;
 		$main_wrapper.style.padding = '';
 	},
@@ -3203,17 +3530,61 @@
 			visible_index_end_mem = current_visible_wrappers * 3;
 		}
 
+		let len = filter_open === 0 ? c_len : filtered_ids_len;
+
 		// drei Fenster-Höhen beginnend ab Ende
-		if(visible_index_end_mem >= c_len){
-			visible_index_end_mem = c_len;
-			visible_index_start_mem = c_len - (current_visible_wrappers * 3);
+		if(visible_index_end_mem >= len){
+			visible_index_end_mem = len;
+			visible_index_start_mem = len - (current_visible_wrappers * 3);
 		}
 
 	},
 
-	// set_statusbar_text █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	set_statusbar_text = () => {
-		$statusbar.textContent = filter_open === 0 ? c_len+' entries' : filtered_ids_len+' / '+c_len+' entries';
+	// statusbar █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	set_statusbar_counter = () => {
+		$sb_counter.textContent = filter_open === 0 ? c_len+' entries' : filtered_ids_len+' / '+c_len+' entries';
+	},
+	
+	set_statusbar_active = () => {
+		let c = filter_open === 0 ? c_cid + 1 : arr_filtered_ids.indexOf(c_cid) + 1; 
+		$sb_active.textContent = c_cid !== -1 ? 'a: '+ c  : 'a: n';
+	},
+
+	// scroll_to_active █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	scroll_to_active = () => {
+		
+		let active_y = 0; // bei c_cid = -1 wird ganz nach oben gescrollt!
+		
+		if(c_cid !== -1){ 
+
+			// dynamic scroll ist aktiv
+			if(dynamic_scroll_is_active === true){
+
+				const c_cid_wrapper_top = color_wrapper_height * c_cid;
+
+				if(c_cid_wrapper_top <= scroll_y_pos || c_cid_wrapper_top >= scroll_y_pos + window_height - controls_height - color_wrapper_height){ // - color_wrapper_height = 1 wrapper Toleranz
+					active_y = c_cid_wrapper_top;
+				}
+
+			}
+			// dynamic scroll ist nicht aktiv
+			else{
+				
+				// if(color_wrapper_height === 0) color_wrapper_height = $color_wrappers[0].offsetHeight;
+
+				const 	c_cid_wrapper_top = $color_wrappers[c_cid].offsetTop,
+						scroll_y = window.scrollY;
+
+				if(c_cid_wrapper_top <= scroll_y || c_cid_wrapper_top >= scroll_y + window_height - controls_height){ // - color_wrapper_height = 1 wrapper Toleranz
+					active_y = c_cid_wrapper_top - controls_height;
+				}
+
+			}
+		
+		}
+		
+		window.scrollTo(0, active_y);
+
 	},
 
 	// set_controls_height █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -3405,9 +3776,6 @@
 
 					for (i = visible_index_start_mem; i < visible_index_end_mem; i++) $color_wrappers[i].className = 'color-wrapper';
 
-					// aktiver wrapper im sichtbaren Bereich? (falls obige Klassen-Änderung die "active"-Klasse überschrieben hat)
-					if(c_cid !== -1 && c_cid >= visible_index_start_mem && c_cid <= visible_index_end_mem) $color_wrappers[c_cid].className = 'color-wrapper active';
-
 					// padding kompensieren
 					$main_wrapper.style.padding = (visible_index_start_mem * color_wrapper_height) + 'px 0 ' + ((c_len - visible_index_end_mem) * color_wrapper_height) + 'px 0';
 
@@ -3424,13 +3792,13 @@
 	},
 
 	// siehe: btn_add_click + btn_sort_click █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	refresh_color_wrappers = () => {
+	refresh_color_wrappers = (loop_start_pos) => {
 
 		//document.body.className = 'hide'; // ███ Performance ███
 
 		// list-view
 		if(mode_current !== 'insert-floatview'){
-			for (i = 0; i < c_len; i++) {
+			for (i = loop_start_pos; i < c_len; i++) {
 				$color_inputs_n[i].value = arr_n[i];
 				$color_inputs_c[i].value = arr_c[i];
 				$color_spans[i].style.background = arr_b[i];
@@ -3438,7 +3806,7 @@
 		}
 		// float-view (identisch mit oben, aber zusätzlich title-Attribut ändern)
 		else{
-			for (i = 0; i < c_len; i++) {
+			for (i = loop_start_pos; i < c_len; i++) {
 				$color_inputs_n[i].value = arr_n[i];
 				$color_inputs_c[i].value = arr_c[i];
 				$color_spans[i].style.background = arr_b[i];
@@ -3461,7 +3829,100 @@
 		})
 	},
 
-	// globale shortcuts █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	// changelog + Help █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	
+	// Achtung! Nicht zu einer Funktion zusammenfassen (auch wenn ähnlich)!!! Es kann nämlich sein, dass der User kurz nach einem Update als erstes 
+	// die Hilfe anzeigen möchte und dann muss trotzdem noch das neueste Changelog angezeigt werden! (mit z-index daruten / siehe css)
+	
+	show_changelog = (changelog_html) => {
+
+		const changelog_close = () => {
+			document.body.classList.remove('overflow-y-hidden');
+			document.body.removeChild($changelog_wrapper);
+		},
+
+		$changelog_wrapper = document.createElement('div');
+
+		// Start ---
+		$changelog_wrapper.id = 'changelog-wrapper';
+		$changelog_wrapper.className = 'info-wrapper';
+
+		// html
+		$changelog_wrapper.innerHTML = changelog_html;
+
+		// close top
+		$el = document.createElement('p');
+		$el.className = 'info-close';
+		$el.addEventListener('click', changelog_close, false);
+		$changelog_wrapper.appendChild($el);
+
+		// close unten
+		$el = document.createElement('p');
+		$el.id = 'btn-changelog-close-bottom'; // Text siehe css (pseudo-Text)
+		$el.addEventListener('click', changelog_close, false);
+		$changelog_wrapper.appendChild($el);
+
+
+		document.body.classList.add('overflow-y-hidden');
+
+		// append
+		document.body.appendChild($changelog_wrapper);
+
+	},
+	
+	show_help = (help_html) => {
+
+		const help_close = () => {
+			document.body.classList.remove('overflow-y-hidden');
+			document.body.removeChild($help_wrapper);
+		},
+		
+		div_toggle_click = (e) => {
+			const 	$this = e.target,
+					toggle_status = $this.toggle_status;	
+			$this.className = toggle_status === false ? 'div-toggle show' : 'div-toggle';
+			$this.toggle_status = toggle_status === true ? false : true;
+		},
+
+		$help_wrapper = document.createElement('div');
+
+		// Start ---
+		$help_wrapper.id = 'help-wrapper';
+		$help_wrapper.className = 'info-wrapper';
+
+		// html
+		$help_wrapper.innerHTML = help_html;
+		
+		// toggle
+		const	$div_toggle = $help_wrapper.getElementsByClassName('div-toggle'),  
+				toggle_len = $div_toggle.length;
+				
+		for (i = 0; i < toggle_len; i++) {
+			$div_toggle[i].toggle_status = false; 
+			$div_toggle[i].addEventListener('click', div_toggle_click, false);
+		}
+
+		// close
+		$el = document.createElement('p');
+		$el.className = 'info-close';
+		$el.addEventListener('click', help_close, false);
+		$help_wrapper.appendChild($el);
+
+		document.body.classList.add('overflow-y-hidden');
+
+		// append
+		document.body.appendChild($help_wrapper);
+
+	},
+
+	// store_webview_state █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+	reset_selection = (reset_selected_class) => {
+		if(reset_selected_class === true) for (i = 0; i < sel_len; i++) $color_inp_wrappers[arr_sel_ids[i]].className = '';
+		arr_sel_ids = [];
+		sel_len = 0;
+	},
+
+	// key events █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 	doc_keypress = (e) => {
 
 		if (e.ctrlKey === true && e.which === 19){
@@ -3481,6 +3942,124 @@
 
 	},
 
+	doc_keydown = (e) => {
+		
+		// ctrl
+		if (e.ctrlKey === true && ctrl_key === false) {
+			$color_wrapper_main.classList.add('multi-select');
+			ctrl_key = true;
+		}
+		
+		// shift
+		if (e.shiftKey === true && shift_key === false) {
+			$color_wrapper_main.classList.add('multi-select');
+			shift_key = true;
+		}
+		
+		// Achtung! Wenn man aus dem Webview heraus die Command Palette mit "ctrl + shift + p" aufruft, dann verliert das Webview augenblicklich
+		// den Focus und "doc_keyup" wird nicht mehr ausgeführt. Wenn man dann in das Webview zurückkehrt sind die beiden Variablen ctrl_key
+		// oder shift_key immer noch true (auch wenn die Tasten dann gar nicht mehr gedrückt werden) und plötzlich wird mit einfachen Mausklicks 
+		// eine Mehrfachauswahl gemacht. Daher hier zuerst prüfen ob eine Tastenkombination gedrückt wurde!
+		
+		// combo: ctrl + beliebige taste
+		if(ctrl_key === true && e.key.toLowerCase() !== 'control') ctrl_combo = true; // siehe: colorwrapper_mousedown()
+
+		
+	},
+
+	doc_keyup = () => {
+		
+		ctrl_combo = false;
+		
+		if(ctrl_key === true) {
+			$color_wrapper_main.classList.remove('multi-select');
+			ctrl_key = false;
+		}
+		
+		if(shift_key === true) {
+			$color_wrapper_main.classList.remove('multi-select');
+			shift_key = false;
+		}
+		
+	},
+
+	// wird nur gebunden wenn dynamic scroll aktiv ist
+	doc_keydown_dynamic_scroll = (e) => {
+
+		// bei Home und End-Taste wird es bei großen Paletten mit dynamic scroll sehr stockend, und es gibt Probleme beim
+		// Ausblenden nicht sichtbarer wrapper (Bild hoch/runter macht aber keine Probleme). Daher das Verhalten simulieren:
+
+		const scroll_to = (direction) =>{
+
+			const n_visible_wrappers = current_visible_wrappers * 3;
+
+			let len = filter_open === 0 ? c_len : filtered_ids_len,
+				visible_index_start_mem_new = 0,
+				visible_index_end_mem_new = 0,
+				p_top = 0,
+				p_bottom = 0,
+				scroll_to_y = 0;
+
+			// scroll-Listener vorübergehend entfernen wegen scrollto (s.u.)
+			window.removeEventListener('scroll', window_dynamic_scroll, false);
+
+			// home
+			if(direction === false){
+				visible_index_end_mem_new = n_visible_wrappers;
+				p_bottom = (len - visible_index_end_mem_new) * color_wrapper_height;
+				// visible_index_start_mem_new = 0;
+				// p_top = 0;
+				// scroll_to_y = 0;
+			}
+			// end
+			else{
+				visible_index_start_mem_new = len - n_visible_wrappers;
+				visible_index_end_mem_new = len;
+				p_top = visible_index_start_mem_new * color_wrapper_height;
+				scroll_to_y = document.body.scrollHeight;
+				// p_bottom = 0;
+			}
+
+			// ohne Filter
+			if(filter_open === 0){
+				for (i = 0; i < n_visible_wrappers; i++) {
+					$color_wrappers[visible_index_start_mem + i].className = 'hide'; // noch aktuelle wrapper ausblenden
+					$color_wrappers[visible_index_start_mem_new + i].className = 'color-wrapper'; // neue wrapper einblenden
+				}
+			}
+			// gefiltert
+			else{
+				for (i = 0; i < n_visible_wrappers; i++) {
+					$color_wrappers[arr_filtered_ids[visible_index_start_mem + i]].className = 'hide'; // noch aktuelle wrapper ausblenden
+					$color_wrappers[arr_filtered_ids[visible_index_start_mem_new + i]].className = 'color-wrapper'; // neue wrapper einblenden
+				}
+			}
+
+			visible_index_start_mem = visible_index_start_mem_new;
+			visible_index_end_mem = visible_index_end_mem_new;
+
+			$main_wrapper.style.padding = p_top + 'px 0 ' + p_bottom + 'px 0';
+			window.scrollTo(0, scroll_to_y);
+			window.addEventListener('scroll', window_dynamic_scroll, false); // rebind scroll listener
+
+		};
+
+		// start -----------------------------------------------------------------------------------------------------
+
+		if(e.target.tagName.toLowerCase() !== 'input'){
+			if(e.key.toLowerCase() === 'home'){
+				e.preventDefault();
+				scroll_to(false);
+			}
+			else if(e.key.toLowerCase() === 'end'){
+				e.preventDefault();
+				scroll_to(true);
+			}
+		}
+
+
+	},
+
 	// reset_current_palette █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 	reset_current_palette = () => {
 
@@ -3490,7 +4069,7 @@
 		// dynamic scroll entfernen?
 		if(dynamic_scroll_is_active === true){
 			dynamic_scroll_remove();
-			scroll_y_mem = 0;
+			scroll_y_pos = 0;
 			visible_index_start_mem = 0;
 			visible_index_end_mem = current_visible_wrappers * 3;
 		}
@@ -3501,11 +4080,23 @@
 		c_len = 0;
 		c_cid = -1;
 
-		$color_wrapper_main.innerHTML = '';
+		arr_filtered_ids = [];
+		filtered_ids_len = 0;
+
+		arr_sel_ids = [];
+		sel_len = 0;
+		
 		$color_wrappers = [];
 		$color_spans = [];
+		$color_inp_wrappers = [];
 		$color_inputs_n = [];
 		$color_inputs_c = [];
+		
+		$color_wrapper_main.innerHTML = '';
+		
+		// falls neue Palette leer ist, vorrübergehend auf "0 entries" und "a: n" setzen!
+		set_statusbar_counter(); 
+		set_statusbar_active();
 
 	},
 
@@ -3542,7 +4133,7 @@
 
 
 	// global vars █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	
+
 	// dynamic scroll
 	var dynamic_scroll_is_active = false,
 		color_wrapper_height = 0,
@@ -3550,15 +4141,34 @@
 		color_wrapper_height = 0,
 		visible_index_start_mem = 0,
 		visible_index_end_mem = 0,
-		scroll_y_mem = -1, // init: nicht 0 / siehe dynamic_scroll()
+		scroll_y_pos = -1, // init: nicht 0 / siehe dynamic_scroll()
 
 		controls_height = 0,
 		context_height = 0,
 		context_width = 0,
 		arr_filtered_ids = [],
 		filtered_ids_len = 0,
+		was_filtered = false,
 		pm_open = false, // status palette manager
 		$el = null, // dummy zur Wiederverwertung beim Erstellen von mehreren Elementen, die keine ID oder Klasse benötigen
+
+		ctrl_key = false,
+		shift_key = false,
+		ctrl_combo = false,
+
+		arr_sel_ids = [],
+		sel_len = 0,
+		
+		// color wrapper clicks
+		current_ani_id = -1,
+		prevent_inp_focusin = false,
+		context_is_open = false,
+		
+		// drag
+		$el_drag = null,
+		$el_hover = null,
+		drag_id = 0,
+		hover_id = 0,		
 
 		i = 0,
 
@@ -3620,12 +4230,12 @@
 
 					// sichtbar -----------------------------------------
 
-					window.statusbar_height = $statusbar.clientHeight; // siehe set_context_click_area();
-					
-					// gefiltert oder dynamic scroll nötig ? Unter "create_controls()" haben bei Filterung oder entsprechender c_len erstmal 
-					// alle wrapper die hide-Klasse erhalten / hätte man dort schon berücksichtigen können aber das würde die Funktion zu 
+					window.statusbar_height = $sb_counter.clientHeight; // siehe set_context_click_area();
+
+					// gefiltert oder dynamic scroll nötig ? Unter "create_controls()" haben bei Filterung oder entsprechender c_len erstmal
+					// alle wrapper die hide-Klasse erhalten / hätte man dort schon berücksichtigen können aber das würde die Funktion zu
 					// unübersichtlich machen
-					
+
 					if(c_len !== 0){ // c_len = 0: Palette leer
 
 						// filter
@@ -3648,13 +4258,22 @@
 						set_controls_height(); // █ set_controls_height() █
 					}
 
-					set_context_click_area();
+					set_context_click_area(); 
 
 					window.addEventListener("resize", window_resize_end, false);
 
-					document.addEventListener("keypress", doc_keypress, false);
+					document.addEventListener('keydown', doc_keydown, false);
+					document.addEventListener('keyup', doc_keyup, false);
+					document.addEventListener('keypress', doc_keypress, false);
 
 					init = false; // ███ Init = false ███
+
+					// Changelog anzeigen?
+					if (msg.changelog_html !== false) show_changelog(msg.changelog_html);
+					
+					// Hilfe anzeigen?
+					if (msg.help_html !== false) show_help(msg.help_html);
+	
 
 				},
 
@@ -3664,7 +4283,7 @@
 				// Achtung!!! Hin- und wieder kommt es vor dass beim Öffnen die Fensterhöhe nicht korrekt abgemessen wird (bzw. 0 ist), daher selbstauafrufende Funktion
 				// die sich maximal 1 Sekunde lang selbst aufruft um die Fensterhöhe zu ermitteln
 
-				 get_window_dimensions = () => {
+				get_window_dimensions = () => {
 
 					window.window_height = window.innerHeight;
 					window.window_width = window.innerWidth;
@@ -3699,19 +4318,15 @@
 				if(c_len > 0){
 
 					create_color_wrappers(0, c_len);
-
-					// list-view
-					if(mode_current !== 'insert-floatview'){
-						// dynamic scroll aktivieren?
-						if (c_len > dynamic_scroll_limit) init_dynamic_scroll();
+					
+					// gefiltert
+					if(filter_open === 1){
+						filter_colors(); // aktiviert selbstständig dynamic scroll wenn nötig!
 					}
-					// float-view
-					else{
-						for (i = 0; i < c_len; i++) $color_wrappers[i].title = arr_n[i] === arr_c[i] ? arr_n[i] : arr_n[i]+': '+arr_c[i]; // Tooltips aktualisieren
+					// nicht gefiltert
+					else{ 
+						if(mode_current !== 'insert-floatview' && c_len > dynamic_scroll_limit) init_dynamic_scroll(); // list-view dynamic scroll aktivieren?
 					}
-
-					// filtern?
-					if(filter_open === 1 && filter_val !== '') filter_colors();
 
 				}
 
@@ -3816,6 +4431,26 @@
 			// _________________________________________________________________________________________________________________________________
 			case 'ext_open_picker':
 				open_picker_external(1, msg.picker_color);
+				break;
+
+			// _________________________________________________________________________________________________________________________________
+			case 'ext_find_colors_in_selection':
+
+				const add_len = msg.arr_add.length;
+
+				dialogbox('Add '+add_len+' colors?', true, confirm => {
+					if (confirm === true) add_colors(msg.arr_add, msg.arr_add, c_cid, true);
+				});
+
+				break;
+				
+			// _________________________________________________________________________________________________________________________________
+			case 'ext_changelog':
+				show_changelog(msg.changelog_html);
+				break;
+			// _________________________________________________________________________________________________________________________________
+			case 'ext_help':
+				show_help(msg.help_html);
 				break;
 
 		}

@@ -37,9 +37,9 @@ $li_hover_color:  var(--vscode-list-hoverForeground);
 	--overlay-background: rgba(0, 0, 0, 0.8);
 }
 
-$alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, #fff 10px);
+$alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, #fff 10px); 
 
-// text 
+
 .edit-sort #btn-toggle-edit-sort:after,
 .edit-convert #btn-toggle-edit-convert:after{ 
 	content: 'EXIT'; 
@@ -75,15 +75,7 @@ $alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, 
 }
 
 #dib-wrapper > div{ // Dialogbox
-		
-	&.save:before {         content: 'Save?'; }
-	&.delete:before {       content: 'Delete?'; }
-	&.rename:before {       content: 'Rename?'; }
-	&.restore:before{       content: 'Restore?';}
-	&.randomize:before {    content: 'Randomize?'; }
-	&.exists:before {       content: 'Not possible! Name already exists!'; }
-	&.illegal-char:before { content: 'Not possible! These chars are not allowed: \\ / : * ? " < > | '; }
-	
+
 	// buttons
 	p:nth-of-type(1):after{content: 'OK';}
 	p:nth-of-type(2):after{content: 'Cancel';}
@@ -104,6 +96,10 @@ $alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, 
 #context-li-copy:after{   	content: 'copy';}
 #context-li-cut:after{    	content: 'cut';}
 #context-li-paste:after{  	content: 'paste';}
+#context-li-select:after{  	content: 'select all';}
+
+// changelog
+#btn-changelog-close-bottom:after{  content: 'close';}
 	
 
 // vscode overrides ____________________________________________________________________________________________________________________________
@@ -146,34 +142,36 @@ body{
 		}		
 		
 	}
-	
-	ul {
-		list-style: none;
+
+}
+
+// ul's _________________________________________________________________________________________________________________
+
+#controls-wrapper ul, #context-ul {
+	list-style: none;
+	display: block;
+	overflow: scroll;
+	margin: 0;
+	padding: 0;
+	background-color: $ul_bg;
+	color: $ul_color;
+	border: 1px solid $inp_border;
+	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+
+	li{
 		display: block;
-		overflow: scroll;
-		margin: 0;
-		padding: 0;
-		background-color: $ul_bg;
-		color: $ul_color;
-		border: 1px solid $inp_border;
-		box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+		width: 100%;
+		line-height: $inp_btn_size;
+		padding-left: 10px;
+		cursor: pointer;
 
-		li{
-			display: block;
-			width: 100%;
-			line-height: $inp_btn_size;
-			padding-left: 10px;
-			cursor: pointer;
-
-			&:hover{
-				background-color: $li_hover_bg;
-				color: $li_hover_color;
-			}
-
+		&:hover{
+			background-color: $li_hover_bg;
+			color: $li_hover_color;
 		}
-		
-	}
 
+	}
+		
 }
 
 // controls-wrapper _________________________________________________________________________________________________________________
@@ -525,6 +523,21 @@ body{
 
 #color-wrapper-main{
 	margin-top: 2px !important; // damit roter selection-border beim ersten color-wrapper sichtbar ist (z-index control-wrapper!)
+	
+	&.multi-select{
+		cursor: pointer !important; 
+		
+		.color-wrapper{
+			user-select: none !important;
+			
+			p, span, input{
+				pointer-events: none !important;
+			}
+			
+		}
+	
+	}
+	
 }
 
 .color-wrapper{
@@ -542,18 +555,6 @@ body{
 		opacity: 0.3;
 	}
 
-	&.active{
-		box-shadow: 0px 0px 0px 1px var(--selection-border);
-		border-color: transparent !important;
-		z-index: 200;
-		
-		&:before{
-			background-color: $body_color;
-			opacity: 0.04;
-		}
-		
-	}
-	
 	&:focus{
 		outline: none; // siehe js (setattribut tabindex)
 	}
@@ -573,8 +574,9 @@ body{
 			background-image: $alpha_bg;
 			z-index: -1;
 		}
-	}
 
+	}
+	
 	// input wrapper
 	div{
 		position: relative;
@@ -582,6 +584,34 @@ body{
 		vertical-align: top;
 		height: 100%;
 		padding: 0 3px 0 3px;
+		
+		// die active- und selected-Klassen werden nicht direkt auf den äußeren wrapper gelegt (".color-wrapper") weil dieser bei dynamic scroll und beim 
+		// filtern per hide-Klasse ausgeblendet wird! Daher auf die Pseudo-Klasse vom input-wrapper legen und per calc an den äußeren wrapper anpassen. 
+		
+		&.active{
+			&:before{
+				content: '';
+				position: absolute;
+				width: calc(100% + #{$wrapper_height});
+				height: 100%;
+				left: -$wrapper_height;
+				box-shadow: 0px 0px 0px 1px var(--selection-border);
+				pointer-events: none; // Wichtig! sonst lässt sich der insert-span im aktiven wrapper nicht mehr klicken
+			}
+		}
+		
+		&.selected{
+			&:before{
+				content: '';
+				position: absolute;
+				width: calc(100% + #{$wrapper_height});
+				height: 100%;
+				top: -1px;
+				left: -$wrapper_height - 1px;
+				border: 1px dashed var(--selection-border);
+				pointer-events: none; // Wichtig! sonst lässt sich der insert-span im aktiven wrapper nicht mehr klicken
+			}
+		}
 
 		input{
 			display: block;
@@ -687,12 +717,30 @@ body{
 	width: 100%;
 	left: 0;
 	bottom: 0;
-	padding-left: $body_padding;
+	
 	height: $statusbar_height;
 	line-height: $statusbar_height;
 	font-size: 12px;
 	background-color: $body_bg;
-	z-index: 201; // aktiven wrapper überdecken (z-index: 200)	
+	z-index: 201; // aktiven wrapper überdecken (z-index: 200)
+	
+	span{
+		position: absolute;
+		
+		&:nth-of-type(1){
+			left: 0;
+			padding-left: $body_padding;
+		}
+		
+		&:nth-of-type(2){
+			right: 0;
+			padding: 0 $body_padding;
+			text-decoration: underline;
+			cursor: pointer;			
+		}
+		
+	}
+	
 }
 
 // Dialogbox  _________________________________________________________________________________________________________________
@@ -730,8 +778,8 @@ body{
 		border: 1px solid var(--popup-border);
 		border-radius: 4px;
 		
-		// pseudo text siehe setup + js
-		&:before{
+		// text
+		span{
 			display: block;
 			width: 100%;
 			margin-bottom: 10px;
@@ -992,7 +1040,7 @@ body{
 		line-height: 30px;
 		padding: 0 20px;
 		
-		&:nth-of-type(1), &:nth-of-type(4) {
+		&:nth-of-type(1), &:nth-of-type(4), &:nth-of-type(5) {
 			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 		}
 		
@@ -1005,6 +1053,12 @@ body{
 }
 
 // js _________________________________________________________________________________________________________________
+
+// diese Klassen wird zugewiesen, wenn die Extension mit floatview geladen wurde und dann zu listview mit dynmaic scroll gewechselt
+// wird. Dann wird dem ersten floatview wrapper diese Klasse zugewiesen um die Höhe zu ermitteln, siehe: "dynamic_scroll_get_values()"
+.meassure-list-wrapper-height{
+	height: $wrapper_height !important;
+}
 
 .hide{
 	display: none !important;
@@ -1181,10 +1235,12 @@ p.inactive:hover {
 	}
 	
 	.color-wrapper{
+		position: relative;
 		float: left;
 		width: auto !important;
 		border-right: 1px solid $body_bg;
 		border-bottom: 1px solid $body_bg;
+		cursor: pointer;
 		
 		// Color-Error Background
 		&:before{
@@ -1192,10 +1248,10 @@ p.inactive:hover {
 			height: 100% !important;
 		}
 		
-		// Achtung! Letzter color-wrapper mit border-bottom damit der main-wrapper nach unten erweitert wird, ansonsten würde die letzte Reihe der Farbfelder durch den Statusbar verdeckt. 
+		// Achtung! Letzter color-wrapper mit margin-bottom damit der main-wrapper nach unten erweitert wird, ansonsten würde die letzte Reihe der Farbfelder durch den Statusbar verdeckt. 
 		// Hängt mit float-left zusammen! Alternativ könnte man auf den color-wrappern mit display inline-block statt float arbeiten, aber dadurch ergeben sich wieder andere Probleme
 		&:last-of-type{
-			border-bottom: $statusbar_height solid transparent !important; 
+			margin-bottom: $statusbar_height; 
 		}
 		
 		span{
@@ -1205,23 +1261,51 @@ p.inactive:hover {
 			padding: 0 !important;
 			line-height: 0 !important;
 		}
-		
-		&.active{
-			box-shadow: 0px 0px 0px 2px var(--selection-border);
 
-			span:after{
-				content: " ";
-				display: block;
-				width: 100%;
-				height: 100%;
-				box-shadow: inset 0px 0px 0px 4px $body_bg !important;
+		// input wrapper 
+		div{ // dient hier nur für roten Auswahlrahmen / inputs und p-tag werden ausgeblendet
+			position: absolute;
+			width: 100%;
+			top: 0;
+			padding: 0 !important;
+			pointer-events: none !important; // Wichtig! sonst Klick auf color-span nicht möglich
+			
+			&.active{
+				&:before{
+					width: 100% !important;
+					height: 100% !important;
+					left: 0 !important;
+					//box-shadow: 0px 0px 0px 1px var(--selection-border);
+					box-shadow: 0px 0px 0px 2px var(--selection-border);
+					z-index: 200; // roter Rahmen muss nachfolgendem color-wrapper überdecken!
+				}
+				
+				&:after{
+					content: " ";
+					display: block;
+					width: 100%;
+					height: 100%;
+					box-shadow: inset 0px 0px 0px 4px $body_bg !important;
+				}
+				
+			}
+			
+			&.selected{
+				&:before{
+					width: 100% !important;
+					height: 100% !important;
+					left: 0 !important;
+					//box-shadow: 0px 0px 0px 1px var(--selection-border);
+					border: 1px dashed var(--selection-border);
+					z-index: 200; // roter Rahmen muss nachfolgendem color-wrapper überdecken!
+				}
 			}
 
-		}
-
-		// input wrapper
-		div{
-			display: none !important;
+			
+			input, p{
+				display: none !important;
+			}
+			
 		}
 	}
 
@@ -1446,6 +1530,10 @@ p.inactive:hover {
 	}
 
 }
+
+
+// ----------------------------------------------------------------------------------------------
+
 
 
 // color picker _________________________________________________________________________________________________________________
@@ -1678,7 +1766,7 @@ p.inactive:hover {
 		width: 4%;
 		left: 0;
 		top: 0; 
-		background: #fff; // init	
+		background: #fff; // init 	
 	}
 	
 }
@@ -1737,6 +1825,160 @@ p.inactive:hover {
 	line-height: 42px;
 	margin-top: 40px;
 }
+
+
+// Changelog + help _________________________________________________________________________________________________________________
+
+.info-wrapper{
+	position: fixed;
+	display: block; 
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 15px;
+	background-color: $body_bg;
+	color: $body_color;
+	overflow-y: scroll !important;
+
+	img{
+		display: block;
+		margin: 10px 0;
+	}
+	
+}
+
+.info-close{
+	position: absolute;
+	right: $pm_padding; 
+	top: $pm_padding;
+	width: $inp_btn_size;
+	
+	&:before, &:after { // Kreuz
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin: -8px 0 0 -1px;
+		height: 18px;
+		width: 2px;
+		background-color: $btn_color;
+	}
+
+	&:before {
+		transform: rotate(45deg);
+	}
+
+	&:after {
+		transform: rotate(-45deg);
+	}
+
+}
+
+#changelog-wrapper{ 
+	z-index: 10000;	
+	line-height: 18px;
+	
+	> ul{
+		margin: 0;
+		padding: 0 0 0 36px;
+		
+		> li{
+			margin-bottom: 10px;
+		}
+	}
+	
+	h1{
+		font-size: 24px;
+		line-height: 30px;
+	}
+	
+	h2{
+		display: block;
+		font-size: 18px;
+		line-height: 21px;
+		margin-top: 30px;
+		border-bottom: 1px solid $body_color;
+	}
+	
+	h3{
+		font-size: 16px;
+		padding: 0;
+		margin: 0;
+		font-weight: normal;
+	}
+	
+}
+
+#help-wrapper{ 
+	z-index: 10001;	// höher als changelog falls beides angezeigt werden muss (siehe js)
+	line-height: 18px;
+	
+	.div-toggle{
+		margin-top: 10px;
+		cursor: pointer;
+		user-select: none;
+		
+		&:nth-of-type(1){
+			margin-top: 40px;
+		}
+		
+		*{
+			pointer-events: none; // siehe js: sonst funktioniert e.target bei .div-toggle nicht!
+		}
+		
+		> div{
+			display: none;
+			padding: 20px 0 20px 30px;
+			font-size: 15px;
+			line-height: 20px;			
+		}
+		
+		&.show{
+			> div{
+				display: block !important;
+			}
+		}
+		
+		&:hover{
+			h3{
+				text-decoration: underline;
+			}
+		}
+		
+		h1{
+			font-size: 24px;
+			line-height: 30px;
+		}
+		
+		h3{
+			font-size: 16px;
+			line-height: 20px;
+			font-weight: normal;
+		}
+		
+		ol{
+			margin: 0;
+			padding: 0 0 0 20px;
+		}
+		
+		code{
+			display: block;
+			margin: 4px 0 0 0; 
+			padding: 4px;
+			border: 1px dashed $body_color;
+			pointer-events: all !important;
+			user-select: all !important;
+			cursor: text !important;
+		}
+		
+	}
+	
+}
+
+
+
+
 
 
 // test

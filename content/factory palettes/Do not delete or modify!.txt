@@ -1,0 +1,26 @@
+Do not delete or modify the factory palettes in this subfolder! 
+
+The factory palettes are copied over to your global user directory when you load 
+the extension for the first time or when you run the command "restore factory palettes":
+
+
+This is the path to your global user directory (there you can do whatever you want!):
+
+
+Windows: 
+%APPDATA%\Code\User\globalStorage\royaction.color-manager
+
+Portable: 
+*your portable path*\user-data\User\globalStorage\royaction.color-manager
+
+Linux: 
+$HOME/.config/Code/User/globalStorage/royaction.color-manager
+
+Mac OS: 
+$HOME/Library/Application Support/Code/User/globalStorage/royaction.color-manager
+    	
+
+
+
+
+
