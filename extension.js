@@ -11,24 +11,87 @@ activate = (context) => {
 
 			// check_custom_styles ----------------------------------------------------------------------------
 			const check_custom_styles = () => {
-
-				/* 
-				hier werden die von vscode festgelegten css-Variablen mit den Farben aus den settings neu definiert und mit "!important" priorisiert. Das Ganze 
-				wird dann in eine css-Datei im Extension-Pfad geschrieben, da keine Datei-Einbindungen außerhalb vom Extension-Pfad erlaubt sind -> Content-Security-Policy!.
-				(ursprüngliche Idee war eine CSS-Datei im User-Verzeichnis). NICHT ERNEUT RUMPROBIEREN! Aufgrund der Content-Security-Policy sind auch keine 
-				Inline-CSS-Styles möglich ... und auch kein <style>-appends innerhalb der main.js ... alles ausprobiert!
-				*/
-	
 				return new Promise(resolve => {
 					
-					const obj_settings_styles = vscode.workspace.getConfiguration("color-manager").styles;
+					// Info! Werte die in der "package.json" als default gesetzt werden sind immer global verfügbar, auch wenn der User nichts in der settings.json eingetragen hat!
+					const color_manager_config = vscode.workspace.getConfiguration("color-manager");		
 					
-	
-					if(Object.entries(obj_settings_styles).length === 0 && obj_settings_styles.constructor === Object){
-						resolve(true); // ██ nichts definiert: return true ██
-					} 
-					else{
+					let str_user_overrides = '',
+						cm_width = color_manager_config.width; 
+					
+					// width -----------------------------------------------
+					if(cm_width !== "full"){
+
+						cm_width = parseInt(cm_width);
+						cm_width = cm_width < 321 ? 320 : cm_width; // Minimum 320 unterschritten? 
 						
+						/*	Info! 
+						
+							body::before:
+							• ist nur für die weiße Border links zuständig. Funktioniert am eigentlichen tag nicht, weil in der float-Ansicht die border irgendwann 
+								endet wenn viele Farbfelder vorhanden sind und gescrollt werden muss								
+							
+							"controls-wrapper: 
+							• die media-widths sind eine Krücke wegen display fixed (geht nich anders)
+							• -20 = 2 x 10px margin
+						*/
+						
+						str_user_overrides += `
+						
+							body{ 
+								max-width: `+cm_width+`px !important; 
+								margin: 0 0 0 auto !important;
+							} 
+							
+							body::before {
+								content: '';
+								position: fixed;
+								top: 0;
+								right: `+cm_width+`px;
+								height:100%;
+								border-left: 1px solid var(--vscode-editor-foreground);
+								z-index: 1000;
+							}
+							
+							@media (min-width: `+(cm_width + 1)+`px) {
+								#controls-wrapper{ 
+									left: auto !important; 
+									right: 0 !important; 
+									max-width: `+(cm_width - 20)+`px !important;
+									width: 100% !important;
+								}
+							}
+							
+							@media (max-width: `+cm_width+`px) {
+								#controls-wrapper{ 
+									left: 0 !important; 
+									right: 0 !important; 
+								}
+							}
+							
+							#statusbar{ 
+								left: auto !important; 
+								right: 0 !important; 
+								max-width: `+cm_width+`px !important;
+							} 
+
+						`;
+						
+					} 
+					
+					// custom styles? ----------------------------------------------------
+					if(Object.entries(color_manager_config.styles).length > 0){
+						
+						/* 
+						Info! Kein default-Wert in "package.json" festgelegt!
+						
+						
+						Hier werden die von vscode festgelegten css-Variablen mit den Farben aus den settings neu definiert und mit "!important" priorisiert. Das Ganze 
+						wird dann in eine css-Datei im Extension-Pfad geschrieben, da keine Datei-Einbindungen außerhalb vom Extension-Pfad erlaubt sind -> Content-Security-Policy!.
+						(ursprüngliche Idee war eine CSS-Datei im User-Verzeichnis). NICHT ERNEUT RUMPROBIEREN! Aufgrund der Content-Security-Policy sind auch keine 
+						Inline-CSS-Styles möglich ... und auch kein <style>-appends innerhalb der main.js ... alles ausprobiert!
+						*/
+
 						const obj_vscode_vars = {
 							background: "--vscode-editor-background",
 							foreground: "--vscode-editor-foreground",
@@ -46,30 +109,35 @@ activate = (context) => {
 							selectionBorder: "--selection-border",
 							popupBorder: "--popup-border",
 							overlayBackground: "--overlay-background"
-						};
+						};	
 						
-						let str_user_overrides = '';
+						str_user_overrides += ':root{'; // root öffnen 
 						
-						for (key in obj_settings_styles) {
-							if(obj_vscode_vars[key] !== undefined) str_user_overrides += obj_vscode_vars[key]+': '+obj_settings_styles[key]+'!important;';
+						for (key in color_manager_config.styles) {
+							if(obj_vscode_vars[key] !== undefined) str_user_overrides += obj_vscode_vars[key]+': '+ color_manager_config.styles[key]+'!important;';
 						}
 						
-						if(str_user_overrides !== ''){
-							
-							str_user_overrides = ':root{'+str_user_overrides+'}';
-							
-							fs.writeFile(context.extensionPath+'/content/dist/user_overrides.css', str_user_overrides, (err) => { // Name "user_overrides.css" absimmen mit "webview_html_content()"!
-								if(err){
-									resolve(false); // ██ error: return false ██
-								}
-								else{
-									custom_styles = true; // siehe "webview_html_content()" (s.u.)
-									resolve(true); // ██ css erfolgreich erzeugt: return true ██
-								}
-							});
-							
-						}
+						str_user_overrides += '}'; // root schließen
 						
+					}
+					
+					// in user_overrides.css schreiben? ---------------------------------------------------------------------------------------------
+					if(str_user_overrides !== ''){
+
+						fs.writeFile(context.extensionPath+'/content/dist/user_overrides.css', str_user_overrides, (err) => { // Name "user_overrides.css" absimmen mit "webview_html_content()"!
+							if(err){
+								resolve(false); // ██ error: return false ██
+							}
+							else{
+								custom_styles = true; // siehe "webview_html_content()" (s.u.)
+								resolve(true); // ██ css erfolgreich erzeugt: return true ██
+							}
+						});
+						
+					}
+					// nur true zurück
+					else{
+						resolve(true);
 					}
 	
 				});
@@ -1171,7 +1239,7 @@ activate = (context) => {
 		},
 		
 		editor = vscode.window.activeTextEditor,
-		sel_len = editor._selections.length,
+		sel_len = editor.selections.length,
 		
 		csscolors_len = arr_csscolors.length;
 
@@ -1197,7 +1265,7 @@ activate = (context) => {
 		}
 		
 		// toLowerCase !!!
-		for (i = 0; i < sel_len; i++) selected_text += editor.document.getText(editor._selections[i]).toLowerCase();
+		for (i = 0; i < sel_len; i++) selected_text += editor.document.getText(editor.selections[i]).toLowerCase();
 		
 		// Tabs und Zeilenumbrüche entfernen (falls sich gradient oder rgb/hsl-Wert über mehrere Zeilen erstreckt) 
 		selected_text = selected_text.trim().replace(/(?:\r\n|\r|\n|\t)/g, ' ');

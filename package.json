@@ -2,7 +2,7 @@
 	"name": "color-manager",
 	"displayName": "Color Manager",
 	"description": "color picker and color palette",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"publisher": "royaction",
 	"engines": {
 		"vscode": "^1.36.0"
@@ -87,16 +87,21 @@
 		"configuration": {
 			"title": "Color Manager configuration",
 			"properties": {
+				"color-manager.width": {
+					"description": "width of the user interface with 2 options: \"full\" or a number (minimum is \"320\" / run command \"color manager help\" for more infos).", 
+					"type": "string",
+					"default": "full"
+				},
 				"color-manager.languages": {
-					"description": "array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (see docs).",
+					"description": "array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (run command \"color manager help\" for more infos).",
 					"type": "array"
 				},
 				"color-manager.styles": {
-					"description": "customizes the style of the webview-extension: background-color, button-colors ... (see docs) ",
+					"description": "customizes the style of the webview-extension: background-color, button-colors ... (run command \"color manager help\" for more infos) ",
 					"type": "object"
 				},
 				"color-manager.insertClassicHex": {
-					"description": "if set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (see docs)",
+					"description": "if set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (run command \"color manager help\" for more infos)",
 					"type": "boolean",
 					"default": false
 				}

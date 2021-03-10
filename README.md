@@ -19,6 +19,7 @@ No Node-Modules! The main extension is plain Vanilla JS and has only a few KiloB
 
 # Changelog
 
+- v0.6.2 You can now customize the width of the user-interface (run command "color manager help" for more infos). Fixed error in Command "find colors in selection"
 - v0.6.1 select multiple colors with CRTL or SHIFT, new command "find colors in selection", 3 new palettes with around 3500 colors, new command "color manager help", new command "color manager changelog", 
 - v0.5.7 git repo added
 - v0.5.5 support for Hex-Colors with prefix "0x"

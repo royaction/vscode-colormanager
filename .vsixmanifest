@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="color-manager" Version="0.5.7" Publisher="royaction"/>
+    <Identity Language="en-US" Id="color-manager" Version="0.6.1" Publisher="royaction"/>
     <DisplayName>Color Manager</DisplayName>
     <Description xml:space="preserve">color picker and color palette</Description>
     <Tags></Tags>
@@ -12,6 +12,7 @@
       <Property Id="Microsoft.VisualStudio.Code.Engine" Value="^1.36.0" />
       <Property Id="Microsoft.VisualStudio.Code.ExtensionDependencies" Value="" />
       <Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value="" />
+      <Property Id="Microsoft.VisualStudio.Code.ExtensionKind" Value="workspace" />
       <Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="" />
       
         <Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="https://github.com/royaction/vscode-colormanager" />
@@ -25,6 +26,7 @@
       
       
       <Property Id="Microsoft.VisualStudio.Services.GitHubFlavoredMarkdown" Value="true" />
+      
       
       
     </Properties>
