@@ -3121,6 +3121,8 @@
 
 	open_context = (e) => {
 		
+		e.preventDefault();
+		
 		if(sort_mode === true){
 			dialogbox('Contextmenu not available in sort mode!', false, confirm => {});
 			return; // ███ return ███

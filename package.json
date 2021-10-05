@@ -2,7 +2,7 @@
 	"name": "color-manager",
 	"displayName": "Color Manager",
 	"description": "color picker and color palette",
-	"version": "0.6.2",
+	"version": "0.6.3",
 	"publisher": "royaction",
 	"engines": {
 		"vscode": "^1.36.0"
