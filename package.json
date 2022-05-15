@@ -2,7 +2,7 @@
 	"name": "color-manager",
 	"displayName": "Color Manager",
 	"description": "color picker and color palette",
-	"version": "0.6.3",
+	"version": "0.7.1",
 	"publisher": "royaction",
 	"engines": {
 		"vscode": "^1.36.0"
@@ -14,6 +14,8 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onView:cm_view",
+		"onStartupFinished",
 		"onCommand:extension.cm_open_palette",
 		"onCommand:extension.cm_open_picker",
 		"onCommand:extension.cm_open_picker_sel",
@@ -26,71 +28,61 @@
 	],
 	"main": "./extension",
 	"contributes": {
-		"menus": {
-			"editor/context": [
+		"viewsContainers": {
+			"activitybar": [
 				{
-					"command": "extension.cm_open_palette",
-					"group": "99_cm"
-				},
-				{
-					"command": "extension.cm_open_picker",
-					"group": "99_cm"
-				},
-				{
-					"command": "extension.cm_open_picker_sel",
-					"group": "99_cm"
-				},
-				{
-					"command": "extension.cm_find_colors_in_selection",
-					"group": "99_cm"
+					"id": "color_manager_webview_container",
+					"title": "color manager",
+					"icon": "icon-activitybar.svg"
 				}
 			]
 		},
-		"commands": [
-			{
-				"command": "extension.cm_open_palette",
-				"title": "open color palette"
-			},
-			{
-				"command": "extension.cm_open_picker",
-				"title": "open color picker"
-			},
-			{
-				"command": "extension.cm_open_picker_sel",
-				"title": "edit in color manager"
-			},
-			{
-				"command": "extension.cm_restore_factory",
-				"title": "restore factory palettes"
-			},
-			{
-				"command": "extension.cm_palette_autocomplete_add",
-				"title": "intellisense add palette"
-			},
-			{
-				"command": "extension.cm_palette_autocomplete_remove",
-				"title": "intellisense remove palette"
-			},
-			{
-				"command": "extension.cm_find_colors_in_selection",
-				"title": "find colors in selection"
-			},
-			{
-				"command": "extension.cm_changelog",
-				"title": "color manager changelog"
-			},
-			{
-				"command": "extension.cm_help",
-				"title": "color manager help"
-			}
-		],
+		"views": {
+			"color_manager_webview_container": [
+				{
+					"id": "cm_view",
+					"type": "webview",
+					"name": "Color Manager"
+				}
+			]
+		},
 		"configuration": {
 			"title": "Color Manager configuration",
 			"properties": {
-				"color-manager.width": {
-					"description": "width of the user interface with 2 options: \"full\" or a number (minimum is \"320\" / run command \"color manager help\" for more infos).", 
-					"type": "string",
-					"default": "full"
+				"color-manager.paletteLimit": {
+					"description": "Maximum number of entries per palette",
+					"type": "integer",
+					"default": 5000
+				},
+				"color-manager.contextMenu": {
+					"description": "commands that appear on the context menu.",
+					"type": "object",
+					"properties": {
+						"edit": {
+							"type": "boolean"
+						},
+						"findColors": {
+							"type": "boolean"
+						},
+						"openPicker": {
+							"type": "boolean"
+						},
+						"openPalette": {
+							"type": "boolean"
+						}
+					},
+					"default": {
+						"edit": true,
+						"findColors": true,
+						"openPicker": true,
+						"openPalette": true
+					},
+					"additionalProperties": false
+				},
+				"color-manager.autoStartIntellisense": {
+					"description": "if set to true, the current intellisense palette will be loaded automatically when vscode is restarted (run command \"color manager help\" for more infos)",
+					"type": "boolean",
+					"default": false
 				},
 				"color-manager.languages": {
 					"description": "array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (run command \"color manager help\" for more infos).",
@@ -100,12 +92,88 @@
 					"description": "customizes the style of the webview-extension: background-color, button-colors ... (run command \"color manager help\" for more infos) ",
 					"type": "object"
 				},
+				"color-manager.fullWidth": {
+					"description": "disable the left and the right resize bar and use the full width for the user interface (run command \"color manager help\" for more infos)",
+					"type": "boolean",
+					"default": false
+				},
 				"color-manager.insertClassicHex": {
 					"description": "if set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (run command \"color manager help\" for more infos)",
 					"type": "boolean",
 					"default": false
 				}
 			}
+		},
+		"commands": [
+			{
+				"command": "extension.cm_open_palette",
+				"title": "open color palette",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_open_picker",
+				"title": "open color picker",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_open_picker_sel",
+				"title": "edit in color manager",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_restore_factory",
+				"title": "restore factory palettes",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_palette_autocomplete_add",
+				"title": "intellisense add palette",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_palette_autocomplete_remove",
+				"title": "intellisense remove palette",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_find_colors_in_selection",
+				"title": "find colors in selection",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_changelog",
+				"title": "color manager changelog",
+				"category": "Color Manager"
+			},
+			{
+				"command": "extension.cm_help",
+				"title": "color manager help",
+				"category": "Color Manager"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "extension.cm_open_palette",
+					"group": "99_cm",
+					"when": "config.color-manager.contextMenu.openPalette"
+				},
+				{
+					"command": "extension.cm_open_picker",
+					"group": "99_cm",
+					"when": "config.color-manager.contextMenu.openPicker"
+				},
+				{
+					"command": "extension.cm_open_picker_sel",
+					"group": "99_cm",
+					"when": "config.color-manager.contextMenu.edit"
+				},
+				{
+					"command": "extension.cm_find_colors_in_selection",
+					"group": "99_cm",
+					"when": "config.color-manager.contextMenu.findColors"
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -126,6 +194,7 @@
 	"__metadata": {
 		"id": "2d8a7f8c-621f-42d0-9cf3-4a1524fe158e",
 		"publisherId": "af2e36a4-96a1-408e-ae9e-769372ff72de",
-		"publisherDisplayName": "Roy Action"
+		"publisherDisplayName": "Roy Action",
+		"installedTimestamp": 1633503891788
 	}
 }

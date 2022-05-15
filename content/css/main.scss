@@ -1,3 +1,17 @@
+
+:root {
+
+	// für user-overrides in vscode settings -> siehe main.js / set_custom_styles()
+	--cm-selection-border: red;
+	--cm-popup-border: rgba(0, 0, 0, 0.5);
+	--cm-overlay-background: rgba(0, 0, 0, 0.8);
+	--cm-max-width: 480px;
+
+	// Mindestbreite Dialogbox (siehe main.js)
+	--dib-min-width: 240px;
+
+}
+
 // setup
 $font_size: 13px; // fixed, ansonsten durch vscode vererbt
 
@@ -9,13 +23,13 @@ $statusbar_height: 24px;
 $opacity_inactive: 0.2;
 
 // palette manager
-$pm_padding: 8px;
+$pm_padding: 12px;
 
 // picker
 $picker_padding: 8px;
 
-// colors
-$body_bg:      	  var(--vscode-editor-background);
+// vscode-colors
+$body_bg:      	  var(--vscode-sideBar-background);
 $body_color:      var(--vscode-editor-foreground);
 $inp_bg:          var(--vscode-input-background);
 $inp_color:       var(--vscode-input-foreground);
@@ -30,104 +44,89 @@ $ul_color:        var(--vscode-dropdown-foreground);
 $li_hover_bg:     var(--vscode-list-hoverBackground);
 $li_hover_color:  var(--vscode-list-hoverForeground);
 
-// für user-overrides -> siehe extension.js / check_custom_styles ()
-:root {
-	--selection-border: red; 
-	--popup-border: rgba(0, 0, 0, 0.5);
-	--overlay-background: rgba(0, 0, 0, 0.8);
-}
-
-$alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0px, #e5e5e5 5px, #fff 5px, #fff 10px); 
+// Eigene:
+$selection_border:  	var(--cm-selection-border);
+$popup_border:  		var(--cm-popup-border);
+$overlay_background:  	var(--cm-overlay-background);
+$cm_max_width:  		var(--cm-max-width);
 
 
-.edit-sort #btn-toggle-edit-sort:after,
-.edit-convert #btn-toggle-edit-convert:after{ 
-	content: 'EXIT'; 
-}
 
-#btn-sort-name:after{    content: 'by name'; }
-#btn-sort-value:after{   content: 'by value'; }
-#btn-sort-hue:after{     content: 'by hue'; }
-#btn-sort-reverse:after{ content: 'reverse'; }
+$alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0, #e5e5e5 5px, #fff 5px, #fff 10px);
 
-#btn-convert-hex:after{ content: 'HEX'; }
-#btn-convert-rgb:after{ content: 'RGB'; }
-#btn-convert-hsl:after{ content: 'HSL'; }
 
 #pm-wrapper { // Palette Manager
-		
+
 	> div{
 		&:nth-of-type(1):before{ content: "Palette Manager"; } // head
-			
+
 		&:nth-of-type(2){
-			&:before{ content: "add new palette:"; }
-			p:after{  content: "add";}
+			&:before{ content: "Add new Palette:"; }
+			p:after{  content: "Add";}
 		}
-			
+
 		&:nth-of-type(3){
-			&:before{ content: "save current palette as:"; }
-			p:after{  content: "save as";}
+			&:before{ content: "Save current Palette as:"; }
+			p:after{  content: "Save as";}
 		}
 	}
-	
-	span:before{ content: "rename | delete palettes:"; }
-	
-}
 
-#dib-wrapper > div{ // Dialogbox
+	span:before{ content: "Rename | Delete Palettes:"; }
 
-	// buttons
-	p:nth-of-type(1):after{content: 'OK';}
-	p:nth-of-type(2):after{content: 'Cancel';}
-		
 }
 
 // Picker
 #picker-head:before{ content: 'Color Picker'; }
-#picker-wrapper.picker-mode-1 #picker-btn-add-replace:after{ content: 'add color to palette'; }		
-#picker-wrapper.picker-mode-2 #picker-btn-add-replace:after{ content: 'replace palette color'; }	
-#picker-btn-insert:after{  content: 'insert'; }
- 
-// context
-#context-li-picker:after{ 	content: 'edit with color picker';}
-#context-li-add:after{    	content: 'add';}
-#context-li-duplicate:after{content: 'duplicate';}
-#context-li-delete:after{ 	content: 'delete';}
-#context-li-copy:after{   	content: 'copy';}
-#context-li-cut:after{    	content: 'cut';}
-#context-li-paste:after{  	content: 'paste';}
-#context-li-select:after{  	content: 'select all';}
+#picker-btn-add:after{ content: 'Add'; }
+#picker-btn-replace:after{ content: 'Replace'; }
+#picker-btn-insert:after{  content: 'Insert'; }
+#picker-preview-sel:after {content: 'Reset';}
 
-// changelog
-#btn-changelog-close-bottom:after{  content: 'close';}
-	
+// context
+#context-li-picker:after{ 		content: 'Edit with Color Picker';}
+#context-li-add:after{    		content: 'Add';}
+#context-li-duplicate:after{	content: 'Duplicate';}
+#context-li-delete:after{ 		content: 'Remove';}
+#context-li-copy:after{   		content: 'Copy';}
+#context-li-cut:after{    		content: 'Cut';}
+#context-li-paste:after{  		content: 'Paste';}
+#context-li-select:after{  		content: 'Select all';}
+.context-li-sort-on:after{  	content: 'Activate Sort-Mode';}
+.context-li-sort-off:after{  	content: 'Deactivate Sort-Mode';}
+#context-li-convert:after{ 		content: 'Convert';}
+#context-li-special:after{ 		content: 'Special Functions';}
+
+#color-wrapper-main.filter-no-results:before{ content:'No results!';}
+
 
 // vscode overrides ____________________________________________________________________________________________________________________________
 
 body{
-	box-sizing: border-box;
 	margin: 0;
-	padding: $body_padding $body_padding $statusbar_height $body_padding; // statusbar!
+	padding: 0 $body_padding;
 	font-size: $font_size;
-	
+	background-color: $body_bg;
+
+	*{
+		box-sizing: border-box;
+	}
+
 	input, p{
 		height: $inp_btn_size;
 		line-height: $inp_btn_size;
-		box-sizing: border-box;
-		margin: 0 ;
+		margin: 0;
 		padding: 0;
 	}
-	
+
 	input{
 		font-size: inherit;
 		font-family: inherit;
-		color: inherit;
 
 		border: 1px solid $inp_border;
 		color: $inp_color;
 		background-color: $inp_bg;
 	}
-	
+
 	// buttons
 	p{
 		background-color: $btn_bg;
@@ -136,33 +135,228 @@ body{
 		text-align: center;
 		border-radius: 2px;
 		cursor: pointer;
-		
+
 		&:hover{
 			background-color: $btn_hover_bg;
-		}		
-		
+		}
+
+	}
+
+	&.loading{
+		#loading-overlay { display: block; }
+		#color-wrapper-main,
+		#picker-wrapper-outer{
+			visibility: hidden; // hidden wegen Größenberechnungen
+		}
+	}
+
+	// "color-manager.width" aus vscode-Settings -> siehe main.js / set_custom_styles()
+	&.set-max-width{
+		max-width: $cm_max_width; // var(--cm-max-width)
+		margin: 0 auto;
+
+		#resize-wrapper, #controls-wrapper, #statusbar, #pm-wrapper{
+			max-width: calc(#{$cm_max_width} + 20px); // 20 = body-padding
+			margin: 0 auto;
+		}
+
+	}
+
+	&.resizing{
+		cursor: col-resize;
+
+		#main-wrapper, #pm-wrapper{
+			*{
+				pointer-events: none;
+				user-select: none;
+			}
+		}
+
+		&.resizing-hide-colors{
+
+			&.has-scrollbar{
+				overflow-y: scroll; // Scrollbar ausgleichen
+			}
+
+			.color-wrapper{
+				&:nth-child(n+300){ display: none; } // Anzahl mit main.js abstimmen
+
+				&:nth-child(282){opacity: 0.95;}
+				&:nth-child(283){opacity: 0.9;}
+				&:nth-child(284){opacity: 0.85;}
+				&:nth-child(285){opacity: 0.8;}
+				&:nth-child(286){opacity: 0.75;}
+				&:nth-child(287){opacity: 0.7;}
+				&:nth-child(288){opacity: 0.65;}
+				&:nth-child(289){opacity: 0.6;}
+				&:nth-child(290){opacity: 0.55;}
+				&:nth-child(291){opacity: 0.5;}
+				&:nth-child(292){opacity: 0.45;}
+				&:nth-child(292){opacity: 0.4;}
+				&:nth-child(293){opacity: 0.35;}
+				&:nth-child(294){opacity: 0.3;}
+				&:nth-child(295){opacity: 0.25;}
+				&:nth-child(296){opacity: 0.2;}
+				&:nth-child(297){opacity: 0.15;}
+				&:nth-child(298){opacity: 0.1;}
+				&:nth-child(299){opacity: 0.05;}
+
+				&:nth-child(282),
+				&:nth-child(283),
+				&:nth-child(284),
+				&:nth-child(285),
+				&:nth-child(286),
+				&:nth-child(287),
+				&:nth-child(288),
+				&:nth-child(289),
+				&:nth-child(290),
+				&:nth-child(291),
+				&:nth-child(292),
+				&:nth-child(292),
+				&:nth-child(293),
+				&:nth-child(294),
+				&:nth-child(295),
+				&:nth-child(296),
+				&:nth-child(297),
+				&:nth-child(298),
+				&:nth-child(299)
+				{
+					span{
+						background: transparent !important;
+
+						// $alpha_bg ausblenden
+						&:before{
+							background-image: none !important;
+							background-color: transparent !important;
+							box-shadow: $body_color 0px 0px 0px 1px inset;
+						}
+					}
+				}
+
+
+			}
+
+		}
+
+	}
+
+	// Achtung! Cursor für alle color-wrapper neu setzen ist ein Performance-Killer (siehe Erklärung! "")
+	&.picker-no-insert{
+		.color-wrapper,
+		.color-wrapper span{
+			cursor: default;
+		}
+	}
+
+
+
+}
+
+// _________________________________________________________________________________________________________________
+#loading-overlay {
+	position: fixed;
+	display: none;
+	width: 100vw;
+	height: 100vh;
+	top: 0;
+	left: 0;
+	z-index: 10000;
+
+
+	transition-delay: 0.4s; // mit settimeout in main.js abstimmen!
+	transition-duration: 0.6s; // mit settimeout in main.js abstimmen!
+	transition-property: opacity;
+	transition-timing-function: ease-in-out;
+
+
+	&:before{
+		content: '';
+		position: absolute;
+
+		top: 50%;
+		left: 50%;
+		height:28px;
+		width:28px;
+		margin: -14px 0 0 -14px;
+
+		border-left: 2px solid $body_color;
+		border-right: 2px solid $body_color;
+		border-bottom: 2px solid $body_color;
+		border-top: 2px solid transparent;
+		border-radius:100%;
+
+		animation: loading_spinner 0.6s infinite linear;
+
+		@keyframes loading_spinner {
+			from {transform: rotate(0deg);}
+			to {transform: rotate(359deg);}
+		}
+
 	}
 
 }
+
+// _________________________________________________________________________________________________________________
+
+#resize-wrapper{
+	position: fixed;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 3500; // höher als controls-wrapper aber niedriger als picker
+}
+
+.resize-border{
+	position: absolute;
+	top: 0;
+	width: 10px; // body padding
+	height: 100%;
+	pointer-events: all;
+	//background-color: rgba(255, 0, 0, 0.3); // test
+
+	// wie color-wrapper Trennlinien:
+	border-color: $body_color;
+	opacity: 0.3;
+	cursor: col-resize;
+
+	&.left {
+		left: -12px; // body padding - 2px, damit die weiße border aus dem Bild rutscht wenn Sidebar genau so groß ist
+		border-left: 1px solid;
+	}
+
+	&.right {
+		right: 8px; // body padding - 2px, damit die weiße border aus dem Bild rutscht wenn Sidebar genau so groß ist
+		border-right: 1px solid;
+	}
+
+}
+
+
+// _________________________________________________________________________________________________________________
+.overflow-hidden{
+	overflow: hidden;
+}
+
 
 // ul's _________________________________________________________________________________________________________________
 
 #controls-wrapper ul, #context-ul {
 	list-style: none;
 	display: block;
-	overflow: scroll;
+	overflow-y: auto;
+	overflow-x: hidden;
 	margin: 0;
 	padding: 0;
 	background-color: $ul_bg;
 	color: $ul_color;
 	border: 1px solid $inp_border;
-	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
 
 	li{
 		display: block;
 		width: 100%;
 		line-height: $inp_btn_size;
-		padding-left: 10px;
+		padding: 0 10px;
 		cursor: pointer;
 
 		&:hover{
@@ -171,22 +365,22 @@ body{
 		}
 
 	}
-		
+
 }
 
 // controls-wrapper _________________________________________________________________________________________________________________
 
 #controls-wrapper{
 	position: fixed;
-	
+
 	// nicht mit 100vw oder 100% arbeiten / läuft rechts raus
 	top: 0;
 	right: 0;
 	left: 0;
-	
-	padding: $body_padding $body_padding 0 $body_padding;
+
+	padding: 0 $body_padding 0 $body_padding;
 	background-color: $body_bg;
-		
+
 	z-index: 1000;
 }
 
@@ -197,9 +391,9 @@ body{
 }
 
 @keyframes ani_insert {
-	0%   { opacity:1}
-	50%   { opacity:0}
-	100% { opacity:1} 
+	0%    {opacity: 1;}
+	50%   {opacity: 0;}
+	100%  {opacity: 1;}
 }
 
 // toggle-wrapper -------------------------------------------------------
@@ -213,12 +407,12 @@ body{
 		position: relative;
 		width: $inp_btn_size;
 		display: table-cell;
-		
+
 		&:before, &:after{
 			content: '';
 			position: absolute;
 		}
-		
+
 	}
 
 }
@@ -227,7 +421,20 @@ body{
 .dropdown-wrapper{
 	position: relative;
 	display: table-cell;
-	padding: 0 8px 0 4px;	
+	padding: 0 8px 0 4px;
+
+	// überlange titel mit transparentem verlauf überlagern
+	&:before {
+		content: " ";
+		position: absolute;
+		display: block;
+		top: 2px; // Fokus-Border muss zu sehen sein!
+		right: 14px; // Fokus-Border muss zu sehen sein!
+		width: 50px;
+		height: calc(#{$inp_btn_size} - 4px); // 4px = top * 2
+		background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, $inp_bg 50%);
+		pointer-events: none;
+	}
 
 	// input arrow (auf div, da auf input nicht möglich)
 	&:after{
@@ -235,7 +442,7 @@ body{
 		position: absolute;
 		display: block;
 		top: 8px;
-		right: 22px;
+		right: 20px;
 		width: 8px;
 		height: 8px;
 		border-right: 2px solid $inp_color;
@@ -243,14 +450,24 @@ body{
 		transform: rotate(135deg);
 		cursor: pointer;
 		pointer-events: none;
+
 	}
-	
+
 	// dropdown ul
 	ul {
 		width: calc(100% - 12px);
 		position: absolute;
-		max-height: 400px;
+		max-height: 402px;
+		overflow-x: hidden !important;
+		box-shadow: 0 10px 10px 0 rgb(0 0 0 / 45%);
+		border-top: 1px solid $body_bg !important;
 		z-index: 2500;
+
+		&.dropdown-ul-full-width{ // siehe js
+			left: -$inp_btn_size;
+			width: calc(100% + #{$inp_btn_size} * 3);
+		}
+
 	}
 
 	// dropdown input
@@ -266,8 +483,8 @@ body{
 
 }
 
-#btn-toggle-insert-edit{ 	
-	
+#btn-toggle-insert-edit{
+
 	// Menü-Icon
 	&:before, &:after{
 		top: 50%;
@@ -275,26 +492,26 @@ body{
 		width: 20px;
 		margin-left: -10px;
 	}
-	
+
 	&:before{
 		height:10px;
 		margin-top: -7px;
 		border-top: 2px solid $btn_color;
 		border-bottom: 2px solid $btn_color;
 	}
-	
+
 
 	&:after{
 		height: 2px;
 		margin-top: -1px;
 		background-color: $btn_color;
 	}
-	
+
 }
 
 
-#btn-toggle-insertview{ // ändern Icons (siehe modes)	
-	left: -4px;	
+#btn-toggle-insertview{ // ändern Icons (siehe modes)
+	left: -4px;
 }
 
 // toggle + filter button
@@ -304,7 +521,7 @@ body{
 }
 
 #btn-filter{
-	
+
 	// Lupe Kreis
 	&:before{
 		content: ' ';
@@ -317,7 +534,7 @@ body{
 		border: 2px solid  $btn_color;
 		border-radius: 50%;
 	}
-	
+
 	// Lupe Griff
 	&:after{
 		content: ' ';
@@ -330,16 +547,16 @@ body{
 		transform: rotate(50deg);
 		background-color: $btn_color;
 	}
-	
+
 	&.active{
-		
+
 		// Lupe Kreis
 		&:before{
 			width: 11px;
 			height: 11px;
 			left: 9px;
 		}
-		
+
 		// Lupe Griff
 		&:after{
 			width: 23px;
@@ -348,7 +565,7 @@ body{
 			transform: rotate(-50deg);
 			background-color: $btn_color;
 		}
-		
+
 	}
 
 }
@@ -374,24 +591,22 @@ body{
 }
 
 #edit-btn-wrapper{
-	position: relative;
 	padding-bottom: 6px;
-	
-	// buttons 
+
+	// buttons
 	p{
 		position: relative;
 		display: inline-block;
 		margin: 0 4px 0 0;
-		width: $inp_btn_size;	
-		height: $inp_btn_size;	
-		line-height: $inp_btn_size;	
+		width: $inp_btn_size;
+		height: $inp_btn_size;
+		line-height: $inp_btn_size;
 	}
 
-	
 }
 
 #btn-add{
-	
+
 	&:before, &:after{
 		content: '';
 		position: absolute;
@@ -411,22 +626,14 @@ body{
 
 }
 
-@media (min-width: 400px) {
-	
-	.float-wrapper{
-		float: right;
-	}
-	
-}
-
 #btn-save{
 	margin-right: 0 !important;
-	
+
 	&:before, &:after{
 		content: '';
 		position: absolute;
 	}
-	
+
 	&:before { // Diskette Form
 		top: 50%;
 		left: 50%;
@@ -448,13 +655,13 @@ body{
 	}
 }
 
-#btn-restore{                     
-	
+#btn-restore{
+
 	&:before, &:after{
 		content: '';
 		position: absolute;
 	}
-	
+
 	&:before{
 		top: 50%;
 		left: 50%;
@@ -465,7 +672,7 @@ body{
 		border-top: 3px solid $btn_color;
 		border-right: 3px solid $btn_color;
 	}
-	
+
 	&:after{
 		top: 18px;
 		right: 6px;
@@ -474,16 +681,16 @@ body{
 		border-color: $btn_color transparent transparent transparent;
 		transform: rotate(40deg);
 	}
-	
+
 }
 
-#btn-texteditor{                     
-	
+#btn-texteditor{
+
 	&:before, &:after{
 		content: '';
 		position: absolute;
 	}
-	
+
 	&:before{
 		top: 9px;
 		left: 10px;
@@ -492,7 +699,7 @@ body{
 		background: $btn_color;
 		transform: rotate(-55deg);
 	}
-	
+
 	&:after{
 		top: 21px;
 		left: 6px;
@@ -501,43 +708,84 @@ body{
 		border-color: $btn_color transparent transparent transparent;
 		transform: rotate(35deg);
 	}
-	
+
 }
 
-#btn-random, #btn-pm-open{                      
+#btn-pm-open{
 	&:after{
+		content: 'P';
 		position: absolute;
 		font-size: 24px;
 		margin-left: -8px;
-		font-family: Arial, sans-serif !important; 
+		font-family: Arial, sans-serif !important;
 		font-weight: bold;
 	}
 }
-
-#btn-random:after{ content: '?'; }
-#btn-pm-open:after{ content: 'P'; }
 
 
 
 // main wrapper / color-wrapper ____________________________________________________________________________________________________________________________
 
 #color-wrapper-main{
+	position: relative;
 	margin-top: 2px !important; // damit roter selection-border beim ersten color-wrapper sichtbar ist (z-index control-wrapper!)
-	
+
+	/* Achtung! Ganz unten in #color-wrapper-main muss etwas eingefügt werden, was der Höhe des Statusbars entspricht ansonsten würde
+	die letzte Reihe der Farbfelder durch den Statusbar verdeckt. (Hängt mit float-left zusammen!) Alternativ könnte man auf den
+	color-wrappern mit display inline-block statt float arbeiten, aber dadurch ergeben sich wieder andere Probleme */
+	&:after{
+		content: "";
+		display: inline-block;
+		width: 100%;
+		height: calc(#{$statusbar_height} - 2px); // - 2px = margin top s.o.
+	}
+
 	&.multi-select{
-		cursor: pointer !important; 
-		
+		cursor: pointer !important;
+
 		.color-wrapper{
 			user-select: none !important;
-			
+
 			p, span, input{
 				pointer-events: none !important;
 			}
-			
+
 		}
-	
+
 	}
-	
+
+	&.filter-no-results{
+		position: relative;
+
+		&:before{
+			// content s.o.
+			position: absolute;
+			display: flex;
+    		align-items: center;
+    		justify-content: center;
+			width: 100%;
+			height: 100%;
+			font-size: 18px;
+		}
+
+	}
+
+	&.sort-mode{
+
+		.color-wrapper {
+			border-bottom: 1px dashed $body_color;
+			cursor: grab !important;
+
+			*{
+				pointer-events: none !important;
+				user-select: none !important;
+				cursor: grab !important;
+			}
+
+		}
+
+	}
+
 }
 
 .color-wrapper{
@@ -545,7 +793,7 @@ body{
 	position: relative;
 	width: 100%;
 	border-bottom: 1px solid transparent;
-	
+
 	&:before{ // before, weil nur so halbtransparente Linie in vscode-Textfarbe möglich
 		position: absolute;
 		content: '';
@@ -558,14 +806,14 @@ body{
 	&:focus{
 		outline: none; // siehe js (setattribut tabindex)
 	}
-	
+
 	// color span
 	span{
 		position: relative;
 		display: table-cell;
 		width: $wrapper_height;
 		height: $wrapper_height;
-		
+
 		&:before{ // alpha bg
 			content: '';
 			position: absolute;
@@ -576,7 +824,7 @@ body{
 		}
 
 	}
-	
+
 	// input wrapper
 	div{
 		position: relative;
@@ -584,10 +832,10 @@ body{
 		vertical-align: top;
 		height: 100%;
 		padding: 0 3px 0 3px;
-		
-		// die active- und selected-Klassen werden nicht direkt auf den äußeren wrapper gelegt (".color-wrapper") weil dieser bei dynamic scroll und beim 
-		// filtern per hide-Klasse ausgeblendet wird! Daher auf die Pseudo-Klasse vom input-wrapper legen und per calc an den äußeren wrapper anpassen. 
-		
+
+		// die active- und selected-Klassen werden nicht direkt auf den äußeren wrapper gelegt (".color-wrapper") weil dieser bei dynamic scroll und beim
+		// filtern per hide-Klasse ausgeblendet wird! Daher auf die Pseudo-Klasse vom input-wrapper legen und per calc an den äußeren wrapper anpassen.
+
 		&.active{
 			&:before{
 				content: '';
@@ -595,11 +843,11 @@ body{
 				width: calc(100% + #{$wrapper_height});
 				height: 100%;
 				left: -$wrapper_height;
-				box-shadow: 0px 0px 0px 1px var(--selection-border);
+				box-shadow: 0 0 0 1px $selection_border;
 				pointer-events: none; // Wichtig! sonst lässt sich der insert-span im aktiven wrapper nicht mehr klicken
 			}
 		}
-		
+
 		&.selected{
 			&:before{
 				content: '';
@@ -608,7 +856,7 @@ body{
 				height: 100%;
 				top: -1px;
 				left: -$wrapper_height - 1px;
-				border: 1px dashed var(--selection-border);
+				border: 1px dashed $selection_border;
 				pointer-events: none; // Wichtig! sonst lässt sich der insert-span im aktiven wrapper nicht mehr klicken
 			}
 		}
@@ -629,11 +877,11 @@ body{
 
 			&:nth-of-type(2){
 				margin-left: $inp_btn_size;
-				padding-left: 2px; 
+				padding-left: 2px;
 			}
 
 		}
-		
+
 		// colormode switch
 		p{
 			position: absolute;
@@ -642,7 +890,7 @@ body{
 			height: 20px;
 			bottom: 4px;
 			left: 9px; // abstimmen 1 !
-			
+
 			// arrow
 			&:before{
 				content: '';
@@ -657,7 +905,7 @@ body{
 				border-top: 2px solid $btn_color;
 				transform: rotate(45deg);
 			}
-			
+
 		}
 
 	}
@@ -680,7 +928,7 @@ body{
 			position: absolute;
 
 		}
-		
+
 		&:before { // Kreis
 			top: 50%;
 			left: 50%;
@@ -690,7 +938,7 @@ body{
 			border: 2px solid $btn_color;
 			border-radius: 50%;
 		}
-		
+
 		&:after { // Strich
 			top: 18px;
 			left: 8px;
@@ -713,58 +961,101 @@ body{
 
 #statusbar{
 	position: fixed;
-	display: block;
-	width: 100%;
-	left: 0;
+	display: flex;
+
+	// nicht mit 100vw oder 100% arbeiten / läuft rechts raus
 	bottom: 0;
-	
+	right: 0;
+	left: 0;
+
 	height: $statusbar_height;
 	line-height: $statusbar_height;
+	padding: 0 $body_padding 0 $body_padding;
 	font-size: 12px;
 	background-color: $body_bg;
 	z-index: 201; // aktiven wrapper überdecken (z-index: 200)
-	
+
 	span{
-		position: absolute;
-		
-		&:nth-of-type(1){
-			left: 0;
-			padding-left: $body_padding;
-		}
-		
+		flex-grow: 1; // beide 50% breit
+
+		// "scroll to active"-wrapper
 		&:nth-of-type(2){
-			right: 0;
-			padding: 0 $body_padding;
-			text-decoration: underline;
-			cursor: pointer;			
+			text-align: right; // beim zweiten span Text nach rechts ausrichten
+			user-select: none;
+			cursor: pointer;
+
+			&:hover{
+				em{
+					text-decoration: underline;
+				}
+			}
+
+			// Pfeil
+			i{
+				position: relative;
+				padding-right: 20px; // Abstand nach rechts
+
+				&:before{
+					content: '';
+					position: absolute;
+					display: inline-block;
+					top: 50%;
+					left: 50%;
+					width: 6px;
+					height: 6px;
+					margin: -4px 0 0 -6px;
+					border-right: 2px solid $body_color;
+					border-top: 2px solid $body_color;
+					transform: rotate(45deg);
+				}
+
+				&:after{
+					content: '';
+					position: absolute;
+					top: 50%;
+					left: 50%;
+					width: 10px;
+					height: 2px;
+					margin: -1px 0 0 -8px;
+					background-color: $body_color;
+				}
+			}
+
+			// "a: 42"
+			em{
+				font-style: normal;
+			}
+
+
+
 		}
-		
+
 	}
-	
+
 }
 
 // Dialogbox  _________________________________________________________________________________________________________________
 
 #dib-wrapper{
-	position : fixed;
+	position: fixed;
 	display: inline-block;
-	left : 0;
-	top : 0;
-	right : 0;
-	bottom : 0;
-	text-align : center;
-	border: $body_padding solid transparent; 
-	background: var(--overlay-background);
-	user-select: none; 
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	text-align: center;
+	border: $body_padding solid transparent;
+	background: $overlay_background;
+	user-select: none;
 	z-index: 10000;
-	
+
 	// vertikale Zentrierungs-Hilfe
-	&:before{    
+	&:before{
 		content: "";
 		display: inline-block;
 		height: 100%;
 		vertical-align: middle;
-		margin-right: -0.25em;  
+		margin-right: -0.25em;
 	}
 
 	// inner wrapper
@@ -772,28 +1063,62 @@ body{
 		display: inline-block;
 		vertical-align: middle;
 		max-width:380px;
-		padding: 26px 36px;
+		padding: 24px 20px;
 		background-color: $body_bg;
 		color: $body_color;
-		border: 1px solid var(--popup-border);
+		border: 1px solid $popup_border;
 		border-radius: 4px;
-		
+
+		@media (max-width: 240px) { padding: 16px 10px; } // sonst dialogbox nicht mehr sichtbar!
+
 		// text
 		span{
 			display: block;
 			width: 100%;
 			margin-bottom: 10px;
-		} 
-		
-		// buttons 
+		}
+
+
+		$dib_controls_gap: 8px;
+
+		input{
+			display: block;
+    		width: calc(100% - (#{$dib_controls_gap} * 2));
+			padding-left: 6px;
+			margin: $dib_controls_gap;
+		}
+
+		// buttons
 		p {
 			display: inline-block;
 			min-width: 100px !important;
-			margin: 8px;
+			margin: $dib_controls_gap;
 		}
-		
+
+		&.has-options{
+			p{
+				display: block !important;
+				padding: 8px 16px;
+				height: auto;
+				line-height: 18px;
+				hyphens: manual; // hyphens auto funktioniert nicht (auch nicht mit <html lang="en"> im webview ... scheint für dynamische elemente nicht zu funktionieren)
+			}
+
+			&.has-cancel{
+				p:last-of-type{
+					margin-top: 30px;
+				}
+			}
+
+		}
+
+		&.dib-stretch{
+			max-width: var(--dib-min-width); // siehe main.js
+			width: 100%;
+		}
+
 	}
-	
+
 }
 
 
@@ -809,20 +1134,18 @@ body{
 	z-index: 3000;
 }
 
+$pm_inp_height: 28px;
+
 #pm-wrapper{
-	box-sizing: border-box;
+	display: flex;
+  	flex-direction: column;
 	position: relative;
-	max-width: 480px;
 	width: 100%;
-	padding: $pm_padding $pm_padding 20px $pm_padding;
+	height: 100%;
+	padding: 0 $pm_padding $pm_padding $pm_padding;
 	margin: 0 auto;
 	background-color: $body_bg;
-	border-radius: 4px;
-	border: 1px solid var(--popup-border);
-	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
 	pointer-events: all;
-	
-	transform: translateY(100px); // init
 
 	div{
 		position: relative;
@@ -835,6 +1158,8 @@ body{
 
 		background-color: $inp_bg;
 		color: $inp_color;
+		height: $pm_inp_height;
+		line-height: $pm_inp_height;
 	}
 
 	// buttons
@@ -846,35 +1171,36 @@ body{
 
 	// input add wrapper + input save-as wrapper
 	> div{
-		
+
 		&:nth-of-type(2), &:nth-of-type(3){
 			margin-bottom: 6px;
 			padding: 24px 0 4px 0; // top: platz für before-Text, bottom Abstand border
-	
+
 			&:before{ // pseudo text s.o.
 				position: absolute;
 				top: 0;
 			}
-	
+
 			// btn add + save as
 			p{
 				// pseudo add s.o.
 				position: absolute;
 				top: 24px;
-				line-height: $inp_btn_size - 2px; // optischer Ausgleich
 				right: 0;
 				width: 66px;
+				height: $pm_inp_height;
+				line-height: $pm_inp_height;
 			}
 		}
-		
+
 		// input add wrapper + input save-as wrapper
 		&:nth-of-type(2){
 			margin-top: 16px;
 		}
 
 	}
-	
-	
+
+
 	// label Datei-Liste 'rename | delete palettes'
 	span{
 		line-height: 32px;
@@ -886,24 +1212,18 @@ body{
 #pm-head{
 	display: block;
 	position: relative;
+	width: 100%;
+	height: 44px;
 	font-size: 15px;
 	font-weight: bold;
-	
-	margin: 0 -$pm_padding;
-	padding: 0 $pm_padding;
-	
-	width: 100%;
-	height: 48px;
-	line-height: 48px;
 	border-bottom: 1px solid $inp_border;
-	
+
 	// close
 	p{
-		right: $pm_padding; 
-		top: $pm_padding;
+		right: 0;
+		top: 0;
 		width: $inp_btn_size;
-		
-		
+
 		&:before, &:after { // Kreuz
 			content: '';
 			position: absolute;
@@ -929,31 +1249,70 @@ body{
 
 // datei-liste
 #pm-list-wrapper{
-	box-sizing: border-box;
-	min-height: 176px;
-	max-height: 274px;
+	flex-grow: 1;
 	overflow-y: auto;
 	border: 1px solid $inp_color;
 	border-radius: 4px;
-	padding: 2px 8px;
-	
+	padding: 2px 3px 2px 8px;
+	transition: opacity 0.15s ease-in; // .hover-helper
+
+	// buttons
 	p{
+		height: 30px;
+		line-height: 30px;
 		background-color: transparent;
 		border-color: transparent;
 	}
-	
+
 	input{
+		height: 30px;
+		line-height: 30px;
+		padding-left: 2px;
 		border-top: 1px solid transparent;
 		border-left: 1px solid transparent;
 		border-right: 1px solid transparent;
 		background-color: $body_bg;
-		padding-left: 2px;
 	}
-	
+
+	&.hover-helper{
+		div{
+			opacity: 0.3;
+			&.hover-helper-highlight{ opacity: 1; }
+		}
+	}
+
+
 	// input + buttons wrapper
 	div{
+		position: relative;
+		margin-top: -2px;
 		margin-bottom: 2px;
-		
+		transition: opacity 0.15s ease-in; // .hover-helper-highlight
+
+		// aktive Palette
+		&.active{
+
+			// Häkchen
+			&:after{
+				content: "";
+				position: absolute;
+				display: block;
+				top: 8px;
+				left: 4px;
+				width: 5px;
+				height: 9px;
+				border: solid $body_color;
+				border-width: 0 3px 3px 0;
+				transform: rotate(45deg);
+			}
+
+			input{
+				padding-left: 20px;
+				font-weight: bold;
+			}
+
+		}
+
 		// buttons rename / delete
 		p{
 			width: $inp_btn_size;
@@ -972,7 +1331,7 @@ body{
 					height: 16px;
 					width: 16px;
 					margin: -10px 0 0 -10px;
-					border: 2px solid $btn_color;
+					border: 2px solid $body_color;
 					border-top-right-radius: 7px;
 
 				}
@@ -983,7 +1342,7 @@ body{
 					height: 8px;
 					width: 9px;
 					margin-left: -5px;
-					background-color: $btn_color;
+					background-color: $body_color;
 				}
 
 			}
@@ -996,17 +1355,17 @@ body{
 					left: 50%;
 					width: 16px;
 					height: 16px;
-					border: 2px solid $btn_color;
+					border: 2px solid $body_color;
 					margin: -10px 0 0 -10px;
 					border-radius: 50%;
 				}
-				
+
 				&:after { // Strich
 					top: 14px;
-					left: 6px;
+					left: 7px;
 					width: 18px;
 					height: 2px;
-					background-color: $btn_color;
+					background-color: $body_color;
 					transform: rotate(45deg);
 				}
 
@@ -1014,7 +1373,7 @@ body{
 			}
 
 		}
-		
+
 		&:last-of-type input{
 			border-bottom: 1px solid transparent;
 		}
@@ -1028,34 +1387,37 @@ body{
 #context-ul{
 	position: fixed;
 	height:auto !important;
-	overflow-x: hidden;
-	overflow-y: auto;
-	z-index: 20000;
 	padding: 6px 0;
-	
+	overflow-y: auto;
+	overflow-x: hidden;
+	box-shadow: 0 0 20px 0 rgba(0,0,0,0.75);
+	z-index: 20000;
+
 	li{ // pseudo-text s.o.
 		display: block;
 		width: 100%;
-		height: 30px;
 		line-height: 30px;
 		padding: 0 20px;
-		
-		&:nth-of-type(1), &:nth-of-type(4), &:nth-of-type(5) {
-			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+		white-space: nowrap;
+
+		&:nth-of-type(1), &:nth-of-type(4), &:nth-of-type(5), &:nth-of-type(8), &:nth-of-type(9), &:nth-of-type(10) {
+			border-bottom: 1px solid rgba(0, 0, 0, $opacity_inactive);
 		}
-		
+
 		&.context-li-disabled{
 			opacity: $opacity_inactive;
+			border-color: rgba(0, 0, 0, 1); // $opacity_inactive aufheben
+			cursor: default;
 		}
-		
+
 	}
-		
+
 }
 
 // js _________________________________________________________________________________________________________________
 
-// diese Klassen wird zugewiesen, wenn die Extension mit floatview geladen wurde und dann zu listview mit dynmaic scroll gewechselt
-// wird. Dann wird dem ersten floatview wrapper diese Klasse zugewiesen um die Höhe zu ermitteln, siehe: "dynamic_scroll_get_values()"
+// diese Klassen wird zugewiesen, wenn die Extension mit compactview geladen wurde und dann zu listview mit dynmaic scroll gewechselt
+// wird. Dann wird dem ersten compactview wrapper diese Klasse zugewiesen um die Höhe zu ermitteln, siehe: "dynamic_scroll_get_values()"
 .meassure-list-wrapper-height{
 	height: $wrapper_height !important;
 }
@@ -1084,62 +1446,52 @@ p.inactive:hover {
 }
 
 .drag-element {
-	opacity: $opacity_inactive;	
+	opacity: $opacity_inactive;
 }
 
 
-// drag head
+// drag head ______________________________________________________________________________________________________________
 .drag-head{
-	cursor: grab;	
-	cursor: -webkit-grab;	
+	cursor: grab;
 }
 
 .drag-head-wrapper-outer{
 	overflow: hidden;
 	user-select: none;
-	pointer-events: none;	
+	pointer-events: none;
 	transform: translateZ(0); // GPU Acc.
-	
+
 	&.mousehold{ pointer-events: all !important; } // Klasse wird gesetzt wenn Element bewegt werden, damit bei document mouseup keine darunterliegenden Elemente getriggert werden!
-	
+
 }
 
 .drag-head-wrapper{
 	pointer-events: all;
-	
+
 	&.drag{ position: absolute !important; }
 
 }
 
-// body modes ----------------------------------------------------------------------------------------------
+// Klasssen auf #main-wrapper ----------------------------------------------------------------------------------------------
 
 // insert-listview
-// insert-floatview
+// insert-compactview
 // edit
-// edit-sort
-// edit-convert
 // no-palettes
 
 
 // color span
-.insert-listview, .insert-floatview, .edit{
-	.color-wrapper span{  
+.insert-listview, .insert-compactview, .edit{
+	.color-wrapper span{
 		cursor: pointer;
 	}
-}	
+}
 
-// color span
-.edit-sort, .edit-convert{
-	.color-wrapper span{  
-		pointer-events: none;
-	}
-}	
-	
-.insert-listview, .edit, .edit-sort, .edit-convert{
+.insert-listview, .edit{
 
 	#btn-toggle-insertview{
-		
-		// floatview Icon
+
+		// compactview Icon
 		&:before, &:after{
 			top: 50%;
 			left: 50%;
@@ -1151,35 +1503,35 @@ p.inactive:hover {
 		&:before{
 			margin: -11px 0 0 -11px;
 		}
-	
+
 		&:after{
 			margin: 1px 0 0 1px;
 		}
 
 	}
-	
+
 	.color-wrapper {
 
 		input{
 			pointer-events: none;
-			
+
 			&:nth-of-type(1){
 				width: calc(100% - 6px);
 			}
-			
+
 			&:nth-of-type(2){
-				width: calc(100% - 30px); 	
+				width: calc(100% - 30px);
 			}
 
 		}
 
 	}
-	
+
 }
 
 // insert ----------------------------------------------------------------------------------------------
-.insert-listview, .insert-floatview{
-	
+.insert-listview, .insert-compactview{
+
 	#edit-wrapper{
 		display: none;
 	}
@@ -1190,29 +1542,29 @@ p.inactive:hover {
 .insert-listview{
 
 	.color-wrapper{
-		
+
 		input{
 			pointer-events: all;
-			
+
 			&:nth-of-type(1){
 				width: calc(100% - 6px);
 			}
-			
+
 			&:nth-of-type(2){
-				width: calc(100% - 28px); 	
+				width: calc(100% - 28px);
 			}
-	
+
 		}
-		
+
 	}
-	
+
 }
 
 // ---------------------------------
-.insert-floatview{
-	
+.insert-compactview{
+
 	#btn-toggle-insertview{
-		
+
 		// Liste-Icon
 		&:before, &:after{
 			left: 50%;
@@ -1222,18 +1574,18 @@ p.inactive:hover {
 			margin-left: -10px;
 			background-color: $btn_color;
 		}
-		
+
 		&:before{
 			margin-top: -9px;
 		}
-		
+
 
 		&:after{
 			margin-top: 3px;
 		}
 
 	}
-	
+
 	.color-wrapper{
 		position: relative;
 		float: left;
@@ -1241,19 +1593,13 @@ p.inactive:hover {
 		border-right: 1px solid $body_bg;
 		border-bottom: 1px solid $body_bg;
 		cursor: pointer;
-		
+
 		// Color-Error Background
 		&:before{
 			width: 100% !important;
 			height: 100% !important;
 		}
-		
-		// Achtung! Letzter color-wrapper mit margin-bottom damit der main-wrapper nach unten erweitert wird, ansonsten würde die letzte Reihe der Farbfelder durch den Statusbar verdeckt. 
-		// Hängt mit float-left zusammen! Alternativ könnte man auf den color-wrappern mit display inline-block statt float arbeiten, aber dadurch ergeben sich wieder andere Probleme
-		&:last-of-type{
-			margin-bottom: $statusbar_height; 
-		}
-		
+
 		span{
 			display: block !important;
 			width: 24px !important;
@@ -1262,66 +1608,66 @@ p.inactive:hover {
 			line-height: 0 !important;
 		}
 
-		// input wrapper 
+		// input wrapper
 		div{ // dient hier nur für roten Auswahlrahmen / inputs und p-tag werden ausgeblendet
 			position: absolute;
 			width: 100%;
 			top: 0;
 			padding: 0 !important;
 			pointer-events: none !important; // Wichtig! sonst Klick auf color-span nicht möglich
-			
+
 			&.active{
 				&:before{
 					width: 100% !important;
 					height: 100% !important;
 					left: 0 !important;
-					//box-shadow: 0px 0px 0px 1px var(--selection-border);
-					box-shadow: 0px 0px 0px 2px var(--selection-border);
+					//box-shadow: 0px 0px 0px 1px $selection_border;
+					box-shadow: 0 0 0 2px $selection_border;
 					z-index: 200; // roter Rahmen muss nachfolgendem color-wrapper überdecken!
 				}
-				
+
 				&:after{
 					content: " ";
 					display: block;
 					width: 100%;
 					height: 100%;
-					box-shadow: inset 0px 0px 0px 4px $body_bg !important;
+					box-shadow: inset 0 0 0 4px $body_bg !important;
 				}
-				
+
 			}
-			
+
 			&.selected{
 				&:before{
 					width: 100% !important;
 					height: 100% !important;
 					left: 0 !important;
-					//box-shadow: 0px 0px 0px 1px var(--selection-border);
-					border: 1px dashed var(--selection-border);
+					//box-shadow: 0px 0px 0px 1px $selection_border;
+					border: 1px dashed $selection_border;
 					z-index: 200; // roter Rahmen muss nachfolgendem color-wrapper überdecken!
 				}
 			}
 
-			
+
 			input, p{
 				display: none !important;
 			}
-			
+
 		}
 	}
 
 }
 
- 
+
 // edit ----------------------------------------------------------------------------------------------
 
-.edit, .edit-sort, .edit-convert{
-	
+.edit{
+
 	#edit-wrapper{
 		display: block;
 	}
-	
-	#btn-toggle-insert-edit{ 
-		
+
+	#btn-toggle-insert-edit{
+
 		// arrow
 		&:before{
 			top: 50%;
@@ -1335,90 +1681,27 @@ p.inactive:hover {
 			border-bottom: 0 none;
 			transform: rotate(-45deg);
 		}
-		
+
 		&:after{
 			display: none;
 		}
-		
-	}
-	
-}
 
-// -------------------------------
-.edit{
-
-	#btn-toggle-edit-sort{
-		position: relative; 
-		width: $inp_btn_size;
-		padding: 0;
-		
-		&:before, &:after{
-			content: '';
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			width: 0;
-			height: 0;
-			margin-left: -6px;
-			border-style: solid;
-		}
-		
-		// Dreiecke
-		&:before{
-			margin-top: 2px;
-			border-width: 8px 6px 0 6px;
-			border-color: $btn_color transparent transparent transparent;
-		}
-		
-		&:after{
-			margin-top: -9px;
-			border-width: 0 6px 8px 6px;
-			border-color: transparent transparent $btn_color transparent; 
-		}
-		
 	}
 
-	#btn-toggle-edit-convert{
-		position: relative; 
-		width: $inp_btn_size;
-		padding: 0;
-		
-		// arrow
-		&:before{
-			content: '';
-			position: absolute;
-			display: inline-block;
-			top: 50%;
-			left: 50%;
-			width: 8px;
-			height: 8px;
-			margin: -6px 0 0 -8px;
-			border-right: 4px solid $btn_color;
-			border-top: 4px solid $btn_color;
-			transform: rotate(45deg);
-		}
-		
-	}
-	
-	#btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse,
-	#btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
-		display: none;
-	}
-	
 	.color-wrapper{
 
-		input{			
+		input{
 			pointer-events: all;
-			
+
 			&:nth-of-type(1){
 				width: calc(100% - 52px);
-				z-index: 10;	
+				z-index: 10;
 			}
-			
+
 			&:nth-of-type(2){
-				width: calc(100% - 74px);	
+				width: calc(100% - 74px);
 			}
-			
+
 		}
 
 		i{ // delete buttons
@@ -1429,108 +1712,27 @@ p.inactive:hover {
 
 }
 
-// -------------------------------
-.edit-sort, .edit-convert{
-	
-	#edit-btn-wrapper{
-		padding-bottom: 5px; // 1px weniger als in '.edit' ... irgend eine komische Verschiebung (wahrscheinlich durch text innerhalb der Buttons)
-	}
-	
-	#btn-save, #btn-restore, #btn-add, #btn-texteditor, #btn-random, #btn-pm-open{
-		display: none;
-	}
-	
-}
-
-.edit-convert{
-	
-	#btn-toggle-edit-sort, #btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse{
-		display: none;
-	}
-	
-	#btn-toggle-edit-convert, #btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
-		display: inline-block !important;
-		width: auto !important;
-		padding: 0 8px;
-		line-height: 30px; // optischer Ausgleich
-		margin-bottom: 4px;
-	}
-
-
-	#btn-toggle-edit-convert{
-		font-weight: bold;
-		margin-left: 0 !important;
-	}
-	
-}
-
-.edit-sort{
-	
-	#btn-toggle-edit-convert, #btn-convert-hex, #btn-convert-rgb, #btn-convert-hsl{
-		display: none;
-	}
-	
-	#btn-toggle-edit-sort, #btn-sort-name, #btn-sort-value, #btn-sort-hue, #btn-sort-reverse{
-		width: auto !important;
-		padding: 0 8px;
-		line-height: 30px; // optischer Ausgleich
-		margin-bottom: 4px;
-	}
-
-
-	#btn-toggle-edit-sort{
-		font-weight: bold;
-		margin-left: 0 !important;
-	}
-
-	#btn-sort-name, #btn-sort-value, #btn-sort-hue{
-		display: inline-block !important;
-	}
-
-	.color-wrapper {
-		border-bottom: 1px dashed $body_color;
-		cursor: -webkit-grab;
-		user-select: none;
-		
-		// input wrapper
-		> div{
-			
-			
-			input{
-				pointer-events: none;
-				width: calc(100% - 10px) !important;				
-				
-				&:nth-of-type(2){
-					margin-left: 4px;
-				}
-				
-			}
-			
-			// color switch
-			p{
-				display: none;
-			}
-			
-		}
-
-	}
-
-}
-
 // ----------------------------------------------------------------------------------------------
 .no-palettes{
-	
+
 	#edit-wrapper{
 		display: block;
 	}
-	
-	.dropdown-wrapper, #pm-wrapper > div:nth-of-type(3), #btn-toggle-insert-edit, #btn-toggle-insertview, #btn-filter, #btn-save, #btn-restore, #btn-add, #btn-texteditor, #btn-random, #btn-toggle-edit-sort{
+
+	.dropdown-wrapper,
+	#pm-wrapper > div:nth-of-type(3),
+	#btn-toggle-insert-edit,
+	#btn-toggle-insertview,
+	#btn-filter,
+	#btn-save,
+	#btn-restore,
+	#btn-add,
+	#btn-texteditor{
 		opacity: $opacity_inactive;
 		pointer-events: none;
 	}
 
 }
-
 
 // ----------------------------------------------------------------------------------------------
 
@@ -1539,41 +1741,44 @@ p.inactive:hover {
 // color picker _________________________________________________________________________________________________________________
 
 // Overlay
-#picker-wrapper-outer{ 
+#picker-wrapper-outer{
 	position: fixed;
-	display: block;
-	
+
+	// #picker-wrapper vertikal zentrieren
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+
 	// nicht mit 100vw oder 100% arbeiten / läuft rechts raus
 	top: 0;
 	right: 0;
 	bottom: 0;
 	left: 0;
-	
+
 	z-index: 4000;
-	
+
 	&.picker-mousehold{ pointer-events: all !important; } // Klasse wird gesetzt wenn Element bewegt werden, damit bei document mouseup keine darunterliegenden Elemente getriggert werden!
-	
+
 }
 
 #picker-wrapper {
-	box-sizing: border-box;
 	position: relative;
 	max-width: 420px;
-	width: 100%;
-	margin: 0 auto;
+	width: calc(100% - ((#{$body_padding * 2}) - 2px)); // -2px = border 1px solid s.u.
+	margin: 0 auto; // horizontal zentrieren
 	padding: $picker_padding;
 	background-color: $body_bg;
 	border-radius: 4px;
-	border: 1px solid var(--popup-border);
-	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
-	user-select: none;	
+	border: 1px solid $popup_border;
+	box-shadow: 0 0 20px 0 rgba(0,0,0,0.75);
+	user-select: none;
 }
 
 #picker-head{
 	position: relative;
 	display: block;
 	height: 40px;
-	
+
 	&:before{ // pseudo text s.o.
 		position: absolute;
 		left: 4px;
@@ -1581,7 +1786,7 @@ p.inactive:hover {
 		font-size: 15px;
 		font-weight: bold;
 	}
-	
+
 }
 
 // close btn
@@ -1590,8 +1795,8 @@ p.inactive:hover {
 	top: $picker_padding;
 	right: $picker_padding;
 	width: $inp_btn_size;
-	z-index: 2002;	
-	
+	z-index: 2002;
+
 	&:before, &:after { // Kreuz
 		content: '';
 		position: absolute;
@@ -1615,52 +1820,82 @@ p.inactive:hover {
 
 // buttons ----------------------------------------------------------
 
-#picker-btn-insert {
-	margin-bottom: 10px;
-}
+$picker_preview_controls_height: 30px;
 
 #picker-preview-wrapper{
 	display: table;
     position: relative;
-    box-sizing: border-box;
     width: 100%;
 	border: 1px solid $inp_border;
 	z-index: 1;
-	
+
 	&:before{ // alpha bg
 		// nicht height:100% und top:0 -> führt zu Problemen mit Buttons (nur pointer-events auf Text ???)
 		content: '';
 		position: absolute;
-		top: 30px; // ███ abstimmen 1 ███ 
+		top: $picker_preview_controls_height; // ███ abstimmen 1 ███
 		left: 0;
 		width: 100%;
-		height: calc(100% - 30px); // ███ abstimmen 1 ███ 
+		height: calc(100% - #{$picker_preview_controls_height}); // ███ abstimmen 1 ███
 		background-image: $alpha_bg;
 		z-index: -1;
 	}
-	
+
 	span{
 		display: table-cell;
 		width: 50%;
 		height: 80px;
-		border-top: 30px solid $body_bg; // ███ abstimmen 1 ███		
+		border-top: $picker_preview_controls_height solid $body_bg; // ███ abstimmen 1 ███
 	}
-	
+
 }
 
-#picker-btn-add-replace { // ändert pseudo text s.o.
+#picker-preview-sel{
+	cursor: pointer;
+
+	// Text "reset"
+	&:after {
+		// content s.o.
+		display: block;
+		width: 100%;
+		height: 50px; // height - border-top
+		line-height: 50px;
+		text-align: center;
+		color: #fff;
+		background-color: rgba(0, 0, 0, 0.25);
+		opacity: 0;
+		transition: opacity 0.17s ease-in;
+	}
+
+	&:hover{
+		&:after {
+			opacity: 1;
+		}
+	}
+
+
+}
+
+
+#picker-btn-add,
+#picker-btn-replace{
+	// ändert pseudo text s.o.
 	display: block;
 	position: absolute;
+	width: 50%;
 	top: 0;
-	left: 0;
-	right: 0;
-	height: 30px; // ███ abstimmen 1 ███ 
-	line-height: 30px; // ███ abstimmen 1 ███ 
+	height: $picker_preview_controls_height; // ███ abstimmen 1 ███
+	line-height: $picker_preview_controls_height - 2px; // ███ abstimmen 1 ███
 	border-top: 1px solid transparent;
 	border-left: 1px solid transparent;
 	border-right: 1px solid transparent;
-	border-bottom: 1px solid $inp_border;
+	border-bottom: 1px solid $body_bg;
 	border-radius: 0;
+}
+
+#picker-btn-replace{
+	right: 0;
+	border-left: 1px solid $body_bg;
 }
 
 // color val ----------------------------------------------------------
@@ -1678,7 +1913,7 @@ p.inactive:hover {
     width: 24px;
     height: 24px;
     left: 0;
-	
+
 	// arrow
 	&:before{
 		content: '';
@@ -1706,11 +1941,11 @@ p.inactive:hover {
 	height: 24px;
 	line-height: 24px;
 	margin-bottom: 10px;
-	
+
 	&.alpha{text-align-last: left;}
 	&.sat{text-align-last: center;}
 	&.hue{text-align-last: right;}
-	
+
 }
 
 // picker controls ----------------------------------------------------------
@@ -1719,26 +1954,26 @@ p.inactive:hover {
 	position: relative;
 	width: 100%;
 	margin: 0 auto;
-	
+
 	&:after{
 		content: '';
 		display: block;
 		padding-bottom: 76%; // height
 	}
-	
+
 	&:before{ // alpha-slider bg / funktioniert auf alpha-slider selbst nicht !
 		content: '';
 		position: absolute;
-		
+
 		// abstimmen mit widht alpha slider !
-		width: 6%; 
+		width: 6%;
 		height: 100%;
 		//border: 1px solid transparent;
 		border-radius: 2px;
-		
+
 		background-image: $alpha_bg;
 	}
-	
+
 }
 
 #sat-rect, #hue-slider, #alpha-slider{
@@ -1746,7 +1981,7 @@ p.inactive:hover {
 	display: block;
 	top: 0;
 	height: 100%;
-	box-shadow: 0px 0px 0 1px rgba(0,0,0,0.4); // nicht mit border arbeiten! Sah bei den Material-Themes scheiße aus, da dort einige border-Farben auf transparent festgelegt sind
+	box-shadow: 0 0 0 1px rgba(0,0,0,0.4); // nicht mit border arbeiten! Sah bei den Material-Themes scheiße aus, da dort einige border-Farben auf transparent festgelegt sind
 	border-radius: 2px;
 	cursor: pointer;
 }
@@ -1755,47 +1990,47 @@ p.inactive:hover {
 	left: 12%;
     width: 76%;
 	background: rgb(0, 68, 255); // init
-	
-	div:nth-of-type(1){ 
+
+	div:nth-of-type(1){
 		width: 100%;
 		height: 100%;
 		background: linear-gradient(to bottom, #fff, transparent, #000), linear-gradient(to right, #808080, transparent), transparent;
 	}
-	
+
 	.pointer{
 		width: 4%;
 		left: 0;
-		top: 0; 
-		background: #fff; // init 	
+		top: 0;
+		background: #fff; // init
 	}
-	
+
 }
 
 #alpha-slider, #hue-slider {
 	width: 6%;
-	
+
 	.pointer{
 		width: calc(100% - 2px);
 		left: 50%;
 	}
-	
+
 }
 
 #hue-slider {
 	right: 0;
 	background: linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 34%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
-	
+
 	.pointer{
-		background: #f00; // init  
+		background: #f00; // init
 	}
-	
+
 }
 
 #alpha-slider {
 	left: 0;
 
 	.pointer{
-		background: transparent;		
+		background: transparent;
 	}
 }
 
@@ -1806,15 +2041,15 @@ p.inactive:hover {
 	border-radius: 50%;
 	z-index: 2001;
 	cursor: pointer;
-	
+
 	transform: translate(-50%, -50%); // init
-	
+
 	&:after{
 		content: '';
 		display: block;
 		padding-bottom: 100%; // height
 	}
-	
+
 }
 
 // btn insert ------------------------------------------
@@ -1823,169 +2058,16 @@ p.inactive:hover {
 	width: 100%;
 	height: 42px;
 	line-height: 42px;
-	margin-top: 40px;
+	margin-top: 10%; // responsive!
+	margin-bottom: 10px;
 }
-
-
-// Changelog + help _________________________________________________________________________________________________________________
-
-.info-wrapper{
-	position: fixed;
-	display: block; 
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	padding: 15px;
-	background-color: $body_bg;
-	color: $body_color;
-	overflow-y: scroll !important;
-
-	img{
-		display: block;
-		margin: 10px 0;
-	}
-	
-}
-
-.info-close{
-	position: absolute;
-	right: $pm_padding; 
-	top: $pm_padding;
-	width: $inp_btn_size;
-	
-	&:before, &:after { // Kreuz
-		content: '';
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		margin: -8px 0 0 -1px;
-		height: 18px;
-		width: 2px;
-		background-color: $btn_color;
-	}
-
-	&:before {
-		transform: rotate(45deg);
-	}
-
-	&:after {
-		transform: rotate(-45deg);
-	}
-
-}
-
-#changelog-wrapper{ 
-	z-index: 10000;	
-	line-height: 18px;
-	
-	> ul{
-		margin: 0;
-		padding: 0 0 0 36px;
-		
-		> li{
-			margin-bottom: 10px;
-		}
-	}
-	
-	h1{
-		font-size: 24px;
-		line-height: 30px;
-	}
-	
-	h2{
-		display: block;
-		font-size: 18px;
-		line-height: 21px;
-		margin-top: 30px;
-		border-bottom: 1px solid $body_color;
-	}
-	
-	h3{
-		font-size: 16px;
-		padding: 0;
-		margin: 0;
-		font-weight: normal;
-	}
-	
-}
-
-#help-wrapper{ 
-	z-index: 10001;	// höher als changelog falls beides angezeigt werden muss (siehe js)
-	line-height: 18px;
-	
-	.div-toggle{
-		margin-top: 10px;
-		cursor: pointer;
-		user-select: none;
-		
-		&:nth-of-type(1){
-			margin-top: 40px;
-		}
-		
-		*{
-			pointer-events: none; // siehe js: sonst funktioniert e.target bei .div-toggle nicht!
-		}
-		
-		> div{
-			display: none;
-			padding: 20px 0 20px 30px;
-			font-size: 15px;
-			line-height: 20px;			
-		}
-		
-		&.show{
-			> div{
-				display: block !important;
-			}
-		}
-		
-		&:hover{
-			h3{
-				text-decoration: underline;
-			}
-		}
-		
-		h1{
-			font-size: 24px;
-			line-height: 30px;
-		}
-		
-		h3{
-			font-size: 16px;
-			line-height: 20px;
-			font-weight: normal;
-		}
-		
-		ol{
-			margin: 0;
-			padding: 0 0 0 20px;
-		}
-		
-		code{
-			display: block;
-			margin: 4px 0 0 0; 
-			padding: 4px;
-			border: 1px dashed $body_color;
-			pointer-events: all !important;
-			user-select: all !important;
-			cursor: text !important;
-		}
-		
-	}
-	
-}
-
-
-
-
 
 
 // test
 
 /*:root {
 	--vscode-editor-foreground: #fff;
-	--vscode-editor-background: #000;
+	--vscode-sideBar-background: #000;
 
     --vscode-dropdown-listBackground: #000;
 	--vscode-dropdown-foreground: #fff;

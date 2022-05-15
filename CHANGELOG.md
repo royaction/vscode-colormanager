@@ -1,0 +1,1 @@
+## Run command "color manager changelog" to open the changelog!

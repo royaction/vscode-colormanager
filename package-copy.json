@@ -1,0 +1,132 @@
+{
+	"name": "color-manager",
+	"displayName": "Color Manager",
+	"description": "color picker and color palette",
+	"version": "0.6.3",
+	"publisher": "royaction",
+	"engines": {
+		"vscode": "^1.36.0"
+	},
+	"icon": "icon.png",
+	"preview": true,
+	"license": "MIT",
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.cm_open_palette",
+		"onCommand:extension.cm_open_picker",
+		"onCommand:extension.cm_open_picker_sel",
+		"onCommand:extension.cm_restore_factory",
+		"onCommand:extension.cm_palette_autocomplete_add",
+		"onCommand:extension.cm_palette_autocomplete_remove",
+		"onCommand:extension.cm_find_colors_in_selection",
+		"onCommand:extension.cm_changelog",
+		"onCommand:extension.cm_help"
+	],
+	"main": "./extension",
+	"contributes": {
+		"menus": {
+			"editor/context": [
+				{
+					"command": "extension.cm_open_palette",
+					"group": "99_cm"
+				},
+				{
+					"command": "extension.cm_open_picker",
+					"group": "99_cm"
+				},
+				{
+					"command": "extension.cm_open_picker_sel",
+					"group": "99_cm"
+				},
+				{
+					"command": "extension.cm_find_colors_in_selection",
+					"group": "99_cm"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "extension.cm_open_palette",
+				"title": "open color palette"
+			},
+			{
+				"command": "extension.cm_open_picker",
+				"title": "open color picker"
+			},
+			{
+				"command": "extension.cm_open_picker_sel",
+				"title": "edit in color manager"
+			},
+			{
+				"command": "extension.cm_restore_factory",
+				"title": "restore factory palettes"
+			},
+			{
+				"command": "extension.cm_palette_autocomplete_add",
+				"title": "intellisense add palette"
+			},
+			{
+				"command": "extension.cm_palette_autocomplete_remove",
+				"title": "intellisense remove palette"
+			},
+			{
+				"command": "extension.cm_find_colors_in_selection",
+				"title": "find colors in selection"
+			},
+			{
+				"command": "extension.cm_changelog",
+				"title": "color manager changelog"
+			},
+			{
+				"command": "extension.cm_help",
+				"title": "color manager help"
+			}
+		],
+		"configuration": {
+			"title": "Color Manager configuration",
+			"properties": {
+				"color-manager.width": {
+					"description": "width of the user interface with 2 options: \"full\" or a number (minimum is \"320\" / run command \"color manager help\" for more infos).",
+					"type": "string",
+					"default": "full"
+				},
+				"color-manager.languages": {
+					"description": "array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (run command \"color manager help\" for more infos).",
+					"type": "array"
+				},
+				"color-manager.styles": {
+					"description": "customizes the style of the webview-extension: background-color, button-colors ... (run command \"color manager help\" for more infos) ",
+					"type": "object"
+				},
+				"color-manager.insertClassicHex": {
+					"description": "if set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (run command \"color manager help\" for more infos)",
+					"type": "boolean",
+					"default": false
+				}
+			}
+		}
+	},
+	"scripts": {
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"typescript": "^2.6.1",
+		"vscode": "^1.1.6",
+		"eslint": "^4.11.0",
+		"@types/node": "^7.0.43",
+		"@types/mocha": "^2.2.42"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/royaction/vscode-colormanager"
+	},
+	"__metadata": {
+		"id": "2d8a7f8c-621f-42d0-9cf3-4a1524fe158e",
+		"publisherId": "af2e36a4-96a1-408e-ae9e-769372ff72de",
+		"publisherDisplayName": "Roy Action",
+		"installedTimestamp": 1633503891788
+	}
+}

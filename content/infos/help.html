@@ -4,11 +4,11 @@
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Buttons</h3>
+	<h3>Controls</h3>
 	<div>
+		<h4>Buttons</h4>
 
-		<img src="color_manager_buttons.jpg">
-		<br><br>
+		<img src="color_manager_buttons.png">
 
 		<ol>
 			<li>toggle edit-options </li>
@@ -16,34 +16,179 @@
 			<li>toggle view mode (in the compact-view the color fields have hover-tooltips that will show you the name and the color value)</li>
 			<li>filter colors (searches in all inputs ... names and values)</li>
 			<li>add new color to the palette (will be inserted at the current selection, or at the beginning if no color is selected)</li>
-			<li>toggle sort mode</li>
-			<li>toggle palette converter</li>
-			<li>randomize palette</li>
 			<li>open palette manager (add, delete and rename palettes)</li>
-			<li>open palette in textmode (see help "edit palette in textmode")</li>
+			<li>edit palette in texteditor (see "edit palette in texteditor")</li>
 			<li>restore palette (will restore the last save-state of the palette)</li>
 			<li>save current palette</li>
 		</ol>
-		
+
+		<br>
+
+		<h4>Context Menu</h4>
+
+		Right click on a color field to open the context menu ...
+
+		<img src="contextmenu.png">
+
+	</div>
+</div>
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Select multiple colors</h3>
+	<div>
+		Hold down Shift- or Ctrl-Key to select multiple colors.
+		<img src="multiselect.png">
 	</div>
 </div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Edit a color value in your document | add a document color to a palette</h3>
+	<h3>Edit colors</h3>
+	<div>
+		Each row has two inputs. The first input is for the name, the 2nd one for the color value. You can input hex colors with 3, 4, 6 or 8 digits, rgb
+		or rgba colors, hsl or hsla colors and css gradients.
+		<img src="edit-palette-colors-1.png">
+	</div>
+</div>
+
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Color Picker</h3>
+	<div>
+		<ul>
+			<li>
+				the "add"-button adds the color to the currently loaded palette. It will be inserted at the position of the currently selected
+				palette-color (red frame) ... or at the beginning if no color is selected.
+			</li>
+			<li>
+				the "replace"-button replaces the actively selected color in the palette.
+			</li>
+			<li>
+				the "reset"-button resets the color to the initial value (only visible when hovered!)
+			</li>
+			<li>
+				the "insert"-button inserts the color to the active document (see "Edit a color value in your document")
+			</li>
+		</ul>
+		<img src="color-picker.jpg">
+	</div>
+</div>
+
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Edit a color value in your document</h3>
 	<div>
 
 		Place the cursor on a color value in your document (doesnt have to be selected). Run the command "edit in color manager" or choose it from vscode's context
 		menu.
 		<img src="edit-doc-color.png">
+		<br>
+
+		Use the color picker controls to change the color and use the "insert"-button on the bottom to replace the document color.
+
+		<img src="color-picker.jpg">
+
+	</div>
+</div>
+
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Insert a palette-color into the document</h3>
+	<div>
+
+		Place the cursor on a color value in your active document or at a free position. Open Color Manager and left-click on a color field in the color palette.
+		The extension will detect if the cursor in your document is placed within a color value. In this case the color value in your document will be replaced.
+		If the cursor is not placed on a color value, the color will be inserted at the current position. Selections will always be replaced.
 		<br><br>
 
-		Use the "insert"-button on the bottom of the color picker to replace the document color (1)
+		<i>Attention! As long as the color picker is opened, inserting is disabled!</i><br><br>
+
+		<b>insert from list-view:</b>
+
+		<img src="insert-from-list.png">
+
+		<b>insert from compact-view:</b>
+
+		<img src="insert-from-compact.png">
+
+	</div>
+</div>
+
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Sort colors</h3>
+	<div>
+
+		<i>Info! For extensive reordering in large palettes, you should use the texteditor (see help "Edit palette in texteditor")</i>
 		<br><br>
 
-		The button "add color to palette" will store the document-color to the currently loaded palette (2). It will be inserted at the position of the currently selected
-		palette-color (red frame) ... or at the beginning if no color is selected.
-		<img src="help-color-picker.png">
+		The extension has a sort-mode that allows you to move a single color up and down via drag and drop.
+
+		<img src="sort.png">
+		<br><br>
+
+		<h4>Manual sorting with Alt-Key</h4>
+
+		Holding down the Alt-Key will automatically activate the sort-mode.<br><br>
+
+		Attention! You have to change some vscode settings to use this feature properly, otherwise vscode's menubar will capture the focus when you
+		press the Alt-Key.<br><br>
+
+		Alternatively you can use the AltGr-Key, if you dont want to change the settings. AltGr will not capture the focus!<br><br>
+
+		Open your vscode settings and insert the following lines:
+		<br><br>
+
+<code>
+"window.titleBarStyle": "custom",<br>
+"window.customMenuBarAltFocus": false,<br>
+"window.enableMenuBarMnemonics": false,
+</code>
+
+		<br><br>
+
+		<h4>Manual sorting with context menu</h4>
+
+		You can permanently activate the sort-mode by opening the context menu and select "Activate Sort-Mode".
+		<br><br>
+		<img src="contextmenu.png">
+
+		<br><br>
+
+
+		<h4>Automatic sorting:</h4>
+
+		Select at least two colors by holding down Shift or Ctrl. Then open the context menu and select "Special Functions" and "Sort by ..."
+
+		There are 4 options available: by name, by value, by hue and reverse.
+		<br><br>
+
+		<img src="multiselect.png">
+
+	</div>
+</div>
+
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<div class='div-toggle'>
+	<h3>Convert colors</h3>
+	<div>
+
+		<h4>Convert color value</h4>
+
+		The color-inputs and the color picker have a small arrow-button that will convert the current color in the following order:<br>
+		HEX6a > HEX3a (if possible) > RGBa > HSLa > HEX6a<br><br>
+
+
+		<h4>Convert multiple colors</h4>
+
+		Select some colors by holding down Shift or Ctrl. Then open the context menu and select "Convert".<br><br>
+
+
+		<h4>Why does hex- to hsl- and back to hex-conversion results in a different hex value? 😦</h4>
+
+		This does not have to be but can be, depending on the specific color value. This has something to do with the different sizes of the color systems.
+		That behavior is the same in professional graphic- and image-editing apps and that the deviations are very small.
+
 
 	</div>
 </div>
@@ -52,12 +197,8 @@
 <div class='div-toggle'>
 	<h3>Add multiple colors to a palette</h3>
 	<div>
-
-		<ol>
-			<li>Open a color palette with the command "open color palette" or choose it from vscode's context menu</li>
-			<li>Select some text in your document and run the command "find colors in selection" or choose it from vscode's context menu</li>
-		</ol>
-		<br>
+		Select some text in your document and run the command "find colors in selection" or choose it from vscode's context menu.
+		<br><br>
 
 		The Extension will search for all color values and css gradients within the selection (or multiple selections) and adds the found values to the active palette.
 		The values will be inserted at the position of the actively selected color (or at the beginnig if no color is selected).
@@ -72,120 +213,50 @@
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Insert a palette-color into the document</h3>
+	<h3>Edit palette in texteditor</h3>
 	<div>
+		<img src="color_manager_buttons.png">
 
-		<ol>
-			<li>Open a color palette with the command "open color palette" or choose it from vscode's context menu</li>
-			<li>Place the cursor in your document on a color value or at a free position* </li>
-			<li>Left-click on a color field in the the color palette</li>
-		</ol>
-		<br>
-
-		<i>
-			* = The extension will detect if the cursor in your document is placed within a color value. In this case the color value in your document will be replaced.
-			If the cursor is not placed on a color value, the color will be inserted at the current position. Selections will always be replaced.
-		</i>
-		<br><br>
-
-		<b>insert from list-view:</b>
-
-		<img src="insert-from-list.png">
-
-		(if you are in order-mode or convert-mode this will be disabled)
-		<br><br><br>
-
-		<b>insert from compact-view:</b>
-
-		<img src="insert-from-compact.png">
-
-	</div>
-</div>
-
-<!-- ---------------------------------------------------------------------------------------------------------- -->
-<div class='div-toggle'>
-	<h3>Edit colors in the palette</h3>
-	<div>
-
-		Each row in list view has two inputs. The first input is for the name, the 2nd one for the color value. You can input hex colors with 3, 4, 6 or 8 digits, rgb
-		or rgba colors, hsl or hsla colors and css gradients.
-
-		<img src="edit-palette-colors-1.png">
-		(if you are in order-mode or convert-mode this will be disabled)
-		<br><br>
-
-		If you want to edit multiple colors, hold down Shift or Ctrl to select them.
-
-		<img src="multiselect.png">
-
-		The extension has it's own context-menu! Right-click on a color (or a multiple selection) and chose an option.
-
-		<img src="contextmenu.png">
-
-		<ol>
-			<li>
-				"edit with color picker" opens the color picker to edit the selected color. The button "replace palette color" on the top of the
-				color picker will replace the currently selected color. You can also replace multiple selections with the same color
-				(dont know if this makes but it's possible)
-				<img src="colorpicker-replace.png">
-			</li>
-			<li>"add" will insert a new color at the position of the actively selected color</li>
-			<li>"duplicate" will duplicate the currently selected color (or a multiple selection)</li>
-			<li>"delete" will delete the currently selected color (or a multiple selection)</li>
-			<li>"select all" will select all colors in the palette. If the colors are filtered, then only the filtered colors will be selected</li>
-			<li>"copy" will copy the currently selected color (or a multiple selection)</li>
-			<li>"cut" will cut the currently selected color (or a multiple selection)</li>
-			<li>
-				"paste" will insert a color (or a multiple selection) at the position of the actively selected color, or at the beginning if nothing is selected
-				(f.e. in compact view when you click on an empty area)<br>
-				<i>Info: You can also copy colors from one palette to another!</i>
-			</li>
-		</ol>
-
-	</div>
-</div>
-
-<!-- ---------------------------------------------------------------------------------------------------------- -->
-<div class='div-toggle'>
-	<h3>Edit palette in textmode</h3>
-	<div>
-		Open the edit mode and click on the pencil-icon (see first article in the help "buttons").<br><br>
-		This will open the current selected palette in a new file-tab. Edit or Re-order the colors as you wish and then just save the file. The extension will 
+		Open the edit mode and click on the button with the pencil-icon (7).<br><br>
+		This will open the current selected palette in a new file-tab. Edit or Re-order the colors as you wish and then just save the file. The extension will
 		automatically refresh the view as you save the file (this only works, if the palette-file is opened from the extension).
 	</div>
 </div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Add color-palettes to vscode's autocomplete / intellisense</h3>
+	<h3>Intellisense | Add color-palettes to vscode's autocomplete feature</h3>
 	<div>
 
-		<b>Add palette to autocomplete:</b><br><br>
+		<h4>Add palette to autocomplete:</h4>
 
-		Run the command "intellisense add palette". It will add the last loaded palette to vscode's automplete-widget, so the webview-extension itself doesnt have to
-		be opened for that command.
+		Run the command "intellisense add palette" and choose a palette from the dropdown. This will add the selected palette to vscode's intellisense- or automplete-feature.
 		<br><br>
 
-		Attention! This will only work if you have specified some languages in your vscode settings. Heres an example-configuration:<br><br>
+		<i>Attention! This will only work if you have specified some languages in your vscode settings. Heres an example-configuration:</i><br><br>
 
 		<code>"color-manager.languages": [ "css", "html", "javascript", "json", "scss" ],</code>
-		<br><br><br>
+		<br><br>
 
-		If you do changes to the currently active palette, the intellisense entries will be automatically refreshed when you save the palette.
-		<br><br><br>
+		If you do changes to the currently active palette, the intellisense entries will be automatically refreshed when you save the palette.<br><br>
 
-		<b>Change the autocomplete palette:</b><br><br>
 
-		If you want to load another palette to intellisense, then open Color Manager, load another palette and run the command "intellisense add palette" again.
-		<br><br><br>
+		<h4>Change the autocomplete palette:</h4>
 
-		<b>Remove a palette from autocomplete:</b><br><br>
+		If you want to load another palette to intellisense, then run the command "intellisense add palette" again. The old palette will be removed (only one palette
+		can be added to intellisense).<br><br>
+
+
+		<h4>Remove a palette from autocomplete:</h4>
 
 		Run the command "intellisense remove palette".<br><br>
 
-		When you close vscode the palettes are removed from autocomplete! So you have to run the command everytime you start vscode.
-		<br><br>
+		<h4>Autostart / Make intellisense palette persistent</h4>
 
+		By default the autocomplete-palette will be removed from intellisense when you close vscode. If you want vscode to automatically load the last palette to intellisense
+		when vscode is restarted, then put the following line into your settings:<br><br>
+
+		<code>"color-manager.autoStartIntellisense": true,</code>
 
 	</div>
 </div>
@@ -222,103 +293,81 @@
 	</div>
 </div>
 
-<!-- ---------------------------------------------------------------------------------------------------------- -->
-<div class='div-toggle'>
-	<h3>Sort colors</h3>
-	<div>
-		
-		<i>Info! For extensive reordering in large palettes, you should use the textmode (see help "Edit palette in textmode")</i>
-		<br><br>
-		
-		Open the edit mode and click on the button with the up-down-arrow-icon (see first article in the help "buttons").
-		<br><br>
-		
-		<b>automatic sorting:</b>
-		<br><br>
-		
-		For automatic sorting there are 4 buttons at the top (by name, by value, by hue and reverse).
-		<br><br> 
-		
-		<b>manual sorting</b>
-		<br><br>
-		
-		You can manually move a single color up and down by drag and drop. 
-		
-		<img src="sort.png">
 
-	</div>
-</div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
 	<h3>Customize the width of the user-interface</h3>
 	<div>
-		
-		There are two options available:
-		
-		<code> "color-manager.width": "full", </code>
-		<code> "color-manager.width": "640", </code>
-		
-		<ul>
-			<li>"full" is enabled by default and will use 100% of the tab-width</li>
-			<li>or you can insert a number to set the user interface to a fixed width. The unit is Pixels and the minimum width is "320" </li>
-		</ul>
-		<br><br>
-		
-		
+
+		This functionality is useful, if you want to make a palette always appear in the same order, like in the screenshot below.<br><br>
+
+		If you want to change the width of the user interface, there are two bars on the left and the right side. Hold down the mouse and drag the bar to the desired position.
+		(Of cause vscode's sidebar has to be larger than the extension)<br><br>
+
+		If you want to disable this behaviour and always use the full width, then put the following line into your settings:<br><br>
+
+		<code> "color-manager.fullWidth": true, </code>
+		<br>
 		<img src="fixed-width.jpg">
-		
+
 
 	</div>
 </div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Customize the colors of the user-interface 🎨</h3>
+	<h3>Customize the colors of the user-interface</h3>
 	<div>
-		
+
 		By default the extension adapts to your vscode theme. I recognized that in some themes it just doesnt look good, so since v0.5.0 you can completely customize
 		the colors of the extension.
 		<br><br>
-		
+
 		<img src="color_manager_custom.png">
 		<br><br>
-		
-		Here is an example that you can paste into your vscode settings ... looks like shit, but should give you a good overview!
+
+		Here is an example that you can paste into your vscode settings ... doesnt look good, but should give you a good overview!
 		<br><br>
 
 		<i>Info! You dont have to use all of the properties! If you just want to change the appearence of the buttons, then just set the "button..."-properties</i>
+
+		<br><br>
+		To refresh changes, toggle the visibility of the extension or run command "reload webviews" from the command palette.
+
 		<br><br>
 
-		<code>
-			"color-manager.styles": {<br>
-				"selectionBorder": "blue",<br>
-				"background": "LightGrey",<br>
-				"foreground": "green", // labels and lines<br>
-				"popupBorder": "Fuchsia", // border for colorpicker, palette-manager and dialogbox<br>
-				"inputForeground": "#000", // input-text<br>
-				"inputBackground": "white", // dropdown input on top and inputs in Palette Manager<br>
-				"inputBorder": "tomato",<br>
-				"buttonBackground": "DarkGray",<br>
-				"buttonForeground": "tomato", // button-icons and button-text<br>
-				"buttonBorder": "tomato",<br>
-				"buttonHoverBackground": "hsla(0, 61%, 50%, 0.51)",<br>
-				"dropdownForeground": "tomato",<br>
-				"dropdownBackground": "white",<br>
-				"dropdownHoverBackground": "hsla(0, 61%, 50%, 0.51)",<br>
-				"overlayBackground": "hsla(0, 61%, 50%, 0.51)" // overlay for dialogbox<br>
-			},
-		</code>
+<code>
+"color-manager.styles": {<br>
+<pre>
+	"selectionBorder": "blue",<br>
+	"background": "LightGrey",<br>
+	"foreground": "green", // labels and lines<br>
+	"popupBorder": "Fuchsia", // border for colorpicker, palette-manager and dialogbox<br>
+	"inputForeground": "#000", // input-text<br>
+	"inputBackground": "white", // dropdown input on top and inputs in Palette Manager<br>
+	"inputBorder": "tomato",<br>
+	"buttonBackground": "DarkGray",<br>
+	"buttonForeground": "tomato", // button-icons and button-text<br>
+	"buttonBorder": "tomato",<br>
+	"buttonHoverBackground": "hsla(0, 61%, 50%, 0.51)",<br>
+	"dropdownForeground": "tomato",<br>
+	"dropdownBackground": "white",<br>
+	"dropdownHoverBackground": "hsla(0, 61%, 50%, 0.51)",<br>
+	"overlayBackground": "hsla(0, 61%, 50%, 0.51)" // overlay for dialogbox
+</pre>
+},
+</code>
 
 	</div>
 </div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Get new palettes | restore factory palettes 🏭</h3>
+	<h3>Restore factory palettes | Get new palettes</h3>
 	<div>
-		Use the command "restore factory palettes" to restore the factory palettes and get new palettes that were included with an update.<br><br> 
-		
+		Use the command "restore factory palettes" to restore the factory palettes and get new palettes that were included with an update.<br><br>
+
 		<i><b>Attention!</b> If you have customized existing factory palettes you should rename them before running the command, otherwise they will be overwritten.</i>
 	</div>
 </div>
@@ -332,7 +381,7 @@
 		<br><br>
 
 		If you dont use a sync extension, look into the global user directory. The palettes are stored in scss-files. Just copy the scss-files to the user folder on your
-		other computer. 	
+		other computer.
 		<br><br>
 
 		Windows:<br>
@@ -356,47 +405,43 @@
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Why does hex- to hsl- and back to hex-conversion results in a different hex value? 😦</h3>
-	<div>
-		This does not have to be but can be, depending on the specific color value. This has something to do with the different sizes of the color systems.
-		All you should know is, that this behavior is the same in professional graphic- and image-editing apps and that the deviations are very small ... so dont worry.
-	</div>
-</div>
-
-<!-- ---------------------------------------------------------------------------------------------------------- -->
-<div class='div-toggle'>
 	<h3>Don't pollute my context-menu!!! 😡</h3>
 	<div>
 
-		If you dont like the entries in vscode's context-menu, open the "settings.json" in the extension directory and delete the "menus"-section. But
-		be careful! If you mess it up, you have to reinstall the extension!
-		<br><br>
+		If you dont like the menu entries in vscode's context menu, put the following lines into your settings:<br><br>
 
-		<img src="dont-pollute.png">
-		<br>
-
-		<i>
-			Hopefully Microsoft will give us an option for this in the future ... my context-menu would take half of the screen, if I wouldnt do this with other
-			extensions.
-		</i>
+<code>
+"color-manager.contextMenu":{<br>
+<pre>
+	"edit": true,<br>
+	"findColors": false,<br>
+	"openPicker": false,<br>
+	"openPalette": false
+</pre>
+},
+</code>
 
 	</div>
 </div>
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <div class='div-toggle'>
-	<h3>Performance</h3>
+	<h3>Palette-Limit | Performance</h3>
 	<div>
 
-		<b>Attention!</b> Large palettes like the factory palette "github colornames bestof" with 2400 colors can slow down the loading time of the extension
-		(but only in the compact view: see description below).
-		<br><br>
+		The palettes are limited to 5000 entries by default, otherwise the compact view mode will get sluggish (see description below).
+		You can override the limit with the following setting:<br><br>
+
+<code>
+"color-manager.paletteLimit": 7000,
+</code>
+
+		<br>
 
 		<b>Description:</b><br><br>
 
-		The largest palette I have tested had 5000 colors. If you are in the list-view and your palette has more then 200 colors, than there will be a dynamic scroll function,
-		which hides colors that are not visible and compensates the space with padding. The performance in this view-mode is surprisingly good. I didnt implement a paging- or
-		dynamic loading-function, because color palettes in desktop apps also dont have such stuff.<br><br>
+		If you are in the list-view and your palette has more then 200 colors, than there will be a dynamic scroll function,
+		which hides colors that are not visible and compensates the space with padding.<br><br>
 
 		If you are in the compact-view (the view-mode with the small color fields) then there will be no performance-helper, because a window with a 700 x 900px can already
 		contain around 1000 color fields. So a dynamic scroll function wouldn't make much sense and performance can be a bit sluggish with large palettes.
@@ -414,8 +459,8 @@
 			<li>"ctrl + w" will close the webview extension (vscode"s standard shortcut for closing file tabs)</li>
 		</ol>
 		<br><br>
-		
-		I would have implemented more shortcuts but some of them will overlap with vscode's existing shortcuts (like ctrl + e).  
+
+		I would have implemented more shortcuts but some of them will overlap with vscode's existing shortcuts (like ctrl + e).
 
 	</div>
 </div>
