@@ -2373,6 +2373,9 @@
 			set_statusbar_counter();
 			set_statusbar_active();
 
+			// "no results" entfernen
+			$color_wrapper_main.classList.remove('filter-no-results');
+
 		}
 
 		set_controls_height();
