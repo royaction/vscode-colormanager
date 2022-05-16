@@ -607,13 +607,13 @@
 		if(vscode.workspace.getConfiguration('color-manager').autoStartIntellisense === true){
 			const gstate_p_name = activate_context.globalState.get('intellisense_palette');
 			if (gstate_p_name !== '' && fs.existsSync(storage_path + gstate_p_name + '.scss') === true){
-				add_palette_to_intellisense(gstate_p_name, false);
+				add_palette_to_intellisense(gstate_p_name, false, false);
 			}
 		}
 	},
 
 	// ____________________________________________________________________________________________________________________________________________________
-	add_palette_to_intellisense = (p_name, show_success_msg) => {
+	add_palette_to_intellisense = (p_name, show_success_msg, call_store_settings) => {
 
 		const create_items_and_subscribe = (arr_n, arr_c) => {
 
@@ -668,8 +668,18 @@
 
 			// "intellisense_palette" aktualisieren
 			intellisense_palette = p_name;
-			store_settings();
 
+			/*
+			!!! Achtung !!!
+			Hier würde es zu einem Fehler kommen wenn vscode neu gestartet wird und die Palette automatisch von "startup_check_intellisense()" geladen wird.
+			Wenn dann beim Startup sofort "store_settings()" aufgerufen wird dann zeigt das webview nicht die zueletzt verwendete Palette an, sondern es wird immer die
+			erste Palette geladen und auch der Picker wird nicht angezeigt. Aus irgendeinem Grund werden dann die "settings_init" verwendet. Irgendwann nochmal
+			genau nachprüfen! Daher wurde zusätlich "call_store_settings" eingebaut, damit beim Startup nicht "store_settings()" aufrufen wird!
+			*/
+
+			if(call_store_settings === true) store_settings(); // "intellisense_palette" speichern
+
+			// Infobox?
 			if(show_success_msg === true) infobox('Palette "'+intellisense_palette+'" added to intellisense!');
 
 		},
@@ -730,7 +740,7 @@
 
 			vscode.window.showQuickPick(new Promise(resolve => resolve(aoo_qp_options)), { placeHolder: 'choose palette:', matchOnDescription: false, }).then((inp_val) => {
 				if (!inp_val) return; // ███ exit ███ ESC / nichts angeklickt
-				add_palette_to_intellisense(arr_p_names[inp_val.id], true);
+				add_palette_to_intellisense(arr_p_names[inp_val.id], true, true);
 			});
 
 		}
