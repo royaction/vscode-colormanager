@@ -1,5 +1,7 @@
 	/*
 
+		TODO: HWB support
+
 		Grundlegende Funktionsweise:
 		----------------------------
 
@@ -163,101 +165,175 @@
 	// ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 	no_selection_get_color_pos = (line, pos_cursor) => {
 
-		const 	line_lc = line.toLowerCase(),
-				line_len = line.length;
+		const get_end_pos = (start_loop_pos, reg) => {
+
+			pos_end = line_len; // pos_end erstmal auf Zeilenende setzen, da sich die Farbe auch genau am Zeilenende befinden kann (dann findet der Loop nämlich nichts)
+
+			for (i = start_loop_pos; i < line_len; i++) {
+				// sobald ein Zeichen erreicht wird dass nicht dem RegEx entspricht, dieses Zeichen als End-Position festlegen
+				if(line_lc[i].match(reg) === null){
+					pos_end = i;
+					break;
+				}
+			}
+
+		},
+
+		line_lc = line.toLowerCase(),
+		line_len = line.length;
 
 		let pos_start = -1,
 			pos_end = -1,
-			csys = -1, // 0 = hex || 1 = rgb hsl
+			c_type = -1, // 0 = #fff || 1 = 0xfff || 2 = rgb hsl
 			char_current = '',
+			i = 0;
 
-			i = pos_cursor;
+
+		// Cursor ganz hinten ___________________________________________________________________________________________________________________________
+
+		// Wenn sich der Cursor ganz hinten befindet (kurz vor Zeilenumbruch) grundsätzlich false zurückgeben!
+		if(pos_cursor === line_len) return false; // ███ exit ███
+
+
+		// HEX, RGB, HSL ___________________________________________________________________________________________________________________________
+
+		// pos_start ermitteln ----------------------------------------------
+		i = pos_cursor;
 
 		for (i; i >= 0; i--) {
 
-			char_current = line_lc.substr(i, 1);
+			char_current = line_lc[i];
 
 			// hex #
-			if(char_current === '#' && i + 4 <= line_len){ // i + 4 = Mindestlänge '#fff'
-				pos_start = i;
-				csys = 0;
-				break;
+			if(char_current === '#') {
+				if(i + 4 <= line_len) { // i + 4 = Mindestlänge '#fff'
+					pos_start = i;
+					c_type = 0;
+					break;
+				}
 			}
 			// hex 0x
 			else if(char_current === '0'){
-				if(i + 5 <= line_len && line_lc.substr(i+1, 1) === 'x'){ // i + 5 = Mindestlänge '0xfff'
+				if(i + 5 <= line_len && line_lc[i + 1] === 'x'){ // i + 5 = Mindestlänge '0xfff'
 					pos_start = i;
-					csys = 0;
+					c_type = 1;
 					break;
 				}
 			}
 			// rgb
 			else if(char_current === 'r'){
-				if(i + 9 < line_len && line_lc.substr(i+1, 2) === 'gb'){ // i + 9 = Mindestlänge 'rgb(0,0,0)'
+				if(i + 9 < line_len && line_lc.substr(i + 1, 2) === 'gb'){ // i + 9 = Mindestlänge 'rgb(0,0,0)'
 					pos_start = i;
-					csys = 1;
+					c_type = 2;
 					break;
 				}
 			}
 			// hsl
 			else if(char_current === 'h'){
-				if(i + 11 < line_len && line_lc.substr(i+1, 2) === 'sl'){ // i + 11 = Mindestlänge 'hsl(0,0%,0%)'
+				if(i + 11 < line_len && line_lc.substr(i + 1, 2) === 'sl'){ // i + 11 = Mindestlänge 'hsl(0,0%,0%)'
 					pos_start = i;
-					csys = 1;
+					c_type = 2;
 					break;
 				}
 			}
 
 		}
 
-		// pos_end hex | rgb hsl --------------------------------------------------------------------------------------------
-		if(pos_start !== -1){
 
-			// pos_end hex
-			if(csys === 0){
+		// pos_end ermitteln ----------------------------------------------
+		if(pos_start !== -1) {
 
-				for (i = pos_start + 1; i < line_lc.length + 1; i++) { // line.length + 1 = linebreak (wird in '_documentData._lines' nicht berücksichtigt)
-					char_current = line_lc.substr(i, 1);
-					if(char_current !== 'x' && char_current.match(/[0-9a-f]/) === null){ // char_current !== 'x' -> "0xfff", ansonsten nur Zahlen und Buchstaben von a bis f
-						pos_end = i;
-						break;
-					}
-				}
+			// HEX: #fff || 0xfff
+			if(c_type === 0 || c_type === 1){
+
+				// Startposition für "get_end_pos()" festlegen ->  +1 = "#" überspringen, +2 = "0x" überspringen
+				const start_search_pos = c_type === 0 ? pos_start + 1 : pos_start + 2;
+
+				// sobald ein Zeichen erreicht wird, das nicht Zahlen und Buchstaben von a bis f entspricht, dieses Zeichen als End-Position festlegen
+				get_end_pos(start_search_pos, /[0-9a-f]/);
+
+				// Hat die Farbe die Länge einer hex3 oder hex6a-Farbe ? (eigentlich müsste noch 5 als gültige Länge ausgeschlossen werden)
+				if(pos_end - start_search_pos < 3 || pos_end - start_search_pos > 8) pos_end = -1; // keine HEX-Farbe █ █ █ pos_end = -1 █ █ █
+
 			}
-			// pos_end rgb|hsl
-			else{ // c_sys = 1
-				pos_end = line_lc.indexOf(')', pos_start) + 1;
-			}
+			// rgb || hsl
+			else{
 
-			// befand sich der cursor in einem freien Raum zwischen 2 Farbwerten?    rgb(0,0,0)   I   #ddd
-			if(pos_end !== -1 && pos_cursor > pos_end) pos_end = -1; // zurücksetzen (s.u.)
+				pos_end = line_lc.indexOf(')', pos_start); // ggf. Klammer nicht gefunden █ █ █ pos_end = -1 █ █ █
 
-		}
+				if(pos_end !== -1){
+					pos_end++; // 1 hochzählen
 
+					/* Hier ggf. irgendwann noch verfeinern und das gleiche regex einbauen wie in der main.js (getrennt für rgb und hsl)
+					Hier wird nur ganz einfach überprüft ob "(" und Kommas auftauchen. Auf "rgb" und "hsl" wurde bereits oben bei pos_start geprüft
+					und Klammer-zu ")" wurde kurz zuvor geprüft */
+					if( line_lc.slice(pos_start, pos_end).match(/.+\(.+,.+/) === null ) pos_end = -1; // keine RGB|HSL-Farbe █ █ █ pos_end = -1 █ █ █
 
-		// css color || 'transparent' ? --------------------------------------------------------------------------------------------
-		if(pos_end === -1) {
-
-			const csscolors_len = arr_csscolors.length;
-
-			for (i = 0; i < csscolors_len; i++){
-
-				pos_start = line_lc.indexOf(arr_csscolors[i].toLowerCase());
-
-				if(pos_start !== -1){
-					pos_end = pos_start + arr_csscolors[i].length;
-					if(pos_cursor >= pos_start && pos_cursor <= pos_end && line_lc.substr(pos_end, 1).match(/[a-z]/) === null){ // match: yellow green yellowgreen !
-						break;
-					}
-					else{
-						pos_end = -1; // zurücksetzen (s.u.)
-					}
 				}
 
 			}
 
 		}
 
+		// End und Cursor-Pos prüfen ___________________________________________________________________________________________________________________________
+
+		// befindet sich die End-Position vor der Cursor-Position?    z.B. in einem freien Raum zwischen 2 Farbwerten?    rgb(0,0,0)   I   #ddd
+		if(pos_end !== -1 && pos_cursor > pos_end) pos_end = -1; // █ █ █ pos_end = -1 █ █ █
+
+
+		// CSS-Farbe ___________________________________________________________________________________________________________________________
+
+		/*
+		!!! Achtung! Reihenfolge beachten!
+
+		Suche nach CSS-Farben kann erst gemacht werden wenn überprüft wurde ob sich die Cursor-Position hinter der End-Position befindet!
+
+		Beispiel:
+		#e5e5e5, blue
+
+		Cursor befand sich innerhalb von "blue". Der Loop ist bis zum "#" zurückgegangen, ist dann wieder nach vorne gegangen bist zum "," und hat somit einen gültigen
+		HEX-Wert ermittelt. Dann wurde aber festgestellt, dass sich der Cursor hinter der End-Position befand. Also muss noch einmal nach CSS-Farben gesucht werden!
+
+		!!! Achtung!
+
+		Nicht versuchen die Suche nach CSS-Farben oben mit unterzubringen. Die Suche nach non-word-chars kommt sich mit der Suche nach RGB-Farben in die Quere,
+		da RGB auch non-word-chars wie Kommas oder Leerzeichen entält. Daher CSS-Farben erst ganz zum Schluss suchen!
+
+		Beispiel:
+		red,green,blue
+		rgb(255,255,0)
+
+
+		*/
+
+		if(pos_end === -1){ // zurückgesetzt oder immer noch -1
+
+			// pos_start ermitteln ----------------------------------------------
+			pos_start = 0; // erstmal auf 0 setzen, da sich eine Farbe auch ganz am Zeilenanfang befinden kann (dann findet der for-Loop nämlich nichts)
+
+			i = pos_cursor;
+
+			for (i; i >= 0; i--) {
+				// sobald ein Zeichen erreicht wird dass nicht einem Buchstaben entspricht, dieses Zeichen als Start-Position festlegen
+				if(line_lc[i].match(/\W/) !== null){ // W = NON-WORD
+					pos_start = i + 1; // + 1, da der vorher geprüfte char ja noch ein Wort-Charakter war
+					break;
+				}
+			}
+
+			// pos_end ermitteln ----------------------------------------------
+
+			// sobald ein Zeichen erreicht wird dass nicht einem Buchstaben entspricht, dieses Zeichen als End-Position festlegen
+			get_end_pos(pos_start + 1, /\w/); // w = WORD
+
+			// gültige CSS-Farbe?
+			if(arr_csscolors.findIndex((el) => el.toLowerCase() === line_lc.slice(pos_start, pos_end).toLowerCase()) === -1) {
+				pos_end = -1; // keine CSS-Farbe █ █ █ pos_end = -1 █ █ █
+			}
+
+		}
+
+		// wurde eine "pos_end" ermittelt? ___________________________________________________________________________________________________________________________
 		return pos_end !== -1 ? [pos_start, pos_end] : false;
 
 	},
@@ -949,7 +1025,8 @@
 			// durch Setzen der beiden Varibalen wird der Picker Initialiseren der main.js direkt beim Start angezeigt!
 			settings_overrides = { // siehe "post_init()"
 				'picker_open': true,
-				'picker_color': p_color
+				'picker_color': p_color,
+				'picker_color_init': p_color // muss neu gesetzt werden, ansonsten wird die gespeicherte Farbe aus dem global state übergeben, siehe main.js / init_cm()
 			};
 
 			show_webview();
@@ -1185,7 +1262,7 @@
 
 				config: vscode.workspace.getConfiguration('color-manager'),
 
-				settings: settings, // mode_current, c_cid, filter_open, filter_val, picker_open, picker_color, scroll_pos, cm_width
+				settings: settings, // mode_current, c_cid, filter_open, filter_val, picker_open, picker_color, picker_color_init, scroll_pos, cm_width
 
 				arr_n: arr_n, // arr_n
 				arr_c: arr_c, // arr_c
@@ -1339,10 +1416,13 @@
 				// 7. picker_color
 				if(typeof settings.picker_color !== 'string') settings.picker_color = settings_init.picker_color;
 
-				// 8. scroll_pos
+				// 8. picker_color_init
+				if(typeof settings.picker_color_init !== 'string') settings.picker_color_init = settings_init.picker_color_init;
+
+				// 9. scroll_pos
 				if(Number.isInteger(settings.scroll_pos) === false || settings.scroll_pos < -1) settings.scroll_pos = settings_init.scroll_pos;
 
-				// 9. cm_width / Nicht auf Mindestbreite prüfen! (wird in main.js gemacht)
+				// 10. cm_width / Nicht auf Mindestbreite prüfen! (wird in main.js gemacht)
 				if(Number.isInteger(settings.cm_width) === false) settings.cm_width = settings_init.cm_width;
 
 			}
@@ -1363,6 +1443,7 @@
 			'filter_val': '',					// '' | suchbegriff
 			'picker_open': false,				// bool
 			'picker_color': '',					// '' | farbwert
+			'picker_color_init': '',			// '' | farbwert
 			'scroll_pos': -1,					// -1 | scroll-Position
 			'cm_width': 380,					// ui-Breite (380 nur für erstmaliges Anzeigen / kann später auch kleiner sein -> ca. 200 / siehe main.js)
 		};
@@ -1544,7 +1625,7 @@
 		storage_path = (context.globalStoragePath.replace(/\\/g, '/') + '/').toLowerCase();
 
 		// Einstellungen aus letzter Sitzung abrufen -> siehe "store_settings()"
-		settings = context.globalState.get('settings'); // undefined ||  {mode_current, c_cid, filter_open, filter_val, p_path, picker_open, picker_color, scroll_pos, cm_width}
+		settings = context.globalState.get('settings'); // undefined ||  {mode_current, c_cid, filter_open, filter_val, p_path, picker_open, picker_color, picker_color_init, scroll_pos, cm_width}
 
 
 		// webview
@@ -1583,7 +1664,7 @@
 	n_new = 'New Color',
 	c_new = '#000',
 
-	arr_csscolors = ['AliceBlue','AntiqueWhite','Aqua','Aquamarine','Azure','Beige','Bisque','Black','BlanchedAlmond','Blue','BlueViolet','Brown','BurlyWood','CadetBlue','Chartreuse','Chocolate','Coral','CornflowerBlue','Cornsilk','Crimson','Cyan','DarkBlue','DarkCyan','DarkGoldenRod','DarkGray','DarkGrey','DarkGreen','DarkKhaki','DarkMagenta','DarkOliveGreen','Darkorange','DarkOrchid','DarkRed','DarkSalmon','DarkSeaGreen','DarkSlateBlue','DarkSlateGray','DarkSlateGrey','DarkTurquoise','DarkViolet','DeepPink','DeepSkyBlue','DimGray','DimGrey','DodgerBlue','FireBrick','FloralWhite','ForestGreen','Fuchsia','Gainsboro','GhostWhite','Gold','GoldenRod','Gray','Grey','Green','GreenYellow','HoneyDew','HotPink','IndianRed','Indigo','Ivory','Khaki','Lavender','LavenderBlush','LawnGreen','LemonChiffon','LightBlue','LightCoral','LightCyan','LightGoldenRodYellow','LightGray','LightGrey','LightGreen','LightPink','LightSalmon','LightSeaGreen','LightSkyBlue','LightSlateGray','LightSlateGrey','LightSteelBlue','LightYellow','Lime','LimeGreen','Linen','Magenta','Maroon','MediumAquaMarine','MediumBlue','MediumOrchid','MediumPurple','MediumSeaGreen','MediumSlateBlue','MediumSpringGreen','MediumTurquoise','MediumVioletRed','MidnightBlue','MintCream','MistyRose','Moccasin','NavajoWhite','Navy','OldLace','Olive','OliveDrab','Orange','OrangeRed','Orchid','PaleGoldenRod','PaleGreen','PaleTurquoise','PaleVioletRed','PapayaWhip','PeachPuff','Peru','Pink','Plum','PowderBlue','Purple','Red','RosyBrown','RoyalBlue','SaddleBrown','Salmon','SandyBrown','SeaGreen','SeaShell','Sienna','Silver','SkyBlue','SlateBlue','SlateGray','SlateGrey','Snow','SpringGreen','SteelBlue','Tan','Teal','Thistle','Tomato','Turquoise','Violet','Wheat','White','WhiteSmoke','Yellow','YellowGreen', 'transparent'];
+	arr_csscolors = ['AliceBlue','AntiqueWhite','Aqua','Aquamarine','Azure','Beige','Bisque','Black','BlanchedAlmond','Blue','BlueViolet','Brown','BurlyWood','CadetBlue','Chartreuse','Chocolate','Coral','CornflowerBlue','Cornsilk','Crimson','Cyan','DarkBlue','DarkCyan','DarkGoldenRod','DarkGray','DarkGrey','DarkGreen','DarkKhaki','DarkMagenta','DarkOliveGreen','Darkorange','DarkOrchid','DarkRed','DarkSalmon','DarkSeaGreen','DarkSlateBlue','DarkSlateGray','DarkSlateGrey','DarkTurquoise','DarkViolet','DeepPink','DeepSkyBlue','DimGray','DimGrey','DodgerBlue','FireBrick','FloralWhite','ForestGreen','Fuchsia','Gainsboro','GhostWhite','Gold','GoldenRod','Gray','Grey','Green','GreenYellow','HoneyDew','HotPink','IndianRed','Indigo','Ivory','Khaki','Lavender','LavenderBlush','LawnGreen','LemonChiffon','LightBlue','LightCoral','LightCyan','LightGoldenRodYellow','LightGray','LightGrey','LightGreen','LightPink','LightSalmon','LightSeaGreen','LightSkyBlue','LightSlateGray','LightSlateGrey','LightSteelBlue','LightYellow','Lime','LimeGreen','Linen','Magenta','Maroon','MediumAquaMarine','MediumBlue','MediumOrchid','MediumPurple','MediumSeaGreen','MediumSlateBlue','MediumSpringGreen','MediumTurquoise','MediumVioletRed','MidnightBlue','MintCream','MistyRose','Moccasin','NavajoWhite','Navy','OldLace','Olive','OliveDrab','Orange','OrangeRed','Orchid','PaleGoldenRod','PaleGreen','PaleTurquoise','PaleVioletRed','PapayaWhip','PeachPuff','Peru','Pink','Plum','PowderBlue','Purple','RebeccaPurple','Red','RosyBrown','RoyalBlue','SaddleBrown','Salmon','SandyBrown','SeaGreen','SeaShell','Sienna','Silver','SkyBlue','SlateBlue','SlateGray','SlateGrey','Snow','SpringGreen','SteelBlue','Tan','Teal','Thistle','Tomato','Turquoise','Violet','Wheat','White','WhiteSmoke','Yellow','YellowGreen', 'transparent'];
 
 
 	let activate_context = {},
@@ -1593,7 +1674,7 @@
 		extension_path = '',
 		storage_path = '',
 
-		settings = {}, // mode_current, c_cid, filter_open, filter_val, p_path, picker_open, picker_color, scroll_pos, cm_width
+		settings = {}, // mode_current, c_cid, filter_open, filter_val, p_path, picker_open, picker_color, picker_color_init, scroll_pos, cm_width
 		settings_overrides = {},
 
 		p_path = '', // Pfad der aktuellen Palette

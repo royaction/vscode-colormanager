@@ -80,7 +80,7 @@ $alpha_bg: repeating-linear-gradient(45deg, #e5e5e5 0, #e5e5e5 5px, #fff 5px, #f
 #picker-btn-add:after{ content: 'Add'; }
 #picker-btn-replace:after{ content: 'Replace'; }
 #picker-btn-insert:after{  content: 'Insert'; }
-#picker-preview-sel:after {content: 'Reset';}
+#picker-preview-init:after {content: 'Reset';}
 
 // context
 #context-li-picker:after{ 		content: 'Edit with Color Picker';}
@@ -1850,7 +1850,7 @@ $picker_preview_controls_height: 30px;
 
 }
 
-#picker-preview-sel{
+#picker-preview-init{
 	cursor: pointer;
 
 	// Text "reset"

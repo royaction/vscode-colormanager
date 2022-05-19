@@ -49,10 +49,14 @@ img{
 	margin: 10px 0;
 }
 
-em{
-	padding: 0 4px;
+.msg-important{
+	display: block;
+	padding: 10px;
+	font-size: 18px;
+	line-height: 24px;
 	background-color: red;
 	color: #fff;
+	font-weight: bold;
 	font-style: normal;
 }
 
@@ -132,7 +136,7 @@ em{
 
 }
 
-.li-mt{
+.li-sep{
 	margin-top: 16px;
 	padding-top: 16px;
 	border-top: 1px dashed $body_color;

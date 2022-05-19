@@ -4,10 +4,45 @@
 
 	<h1>Whats new in Color Manager?</h1>
 
-	<h2>v0.7.2</h2>
+	<div class="msg-important">
+		Sorry for annoying you with 4 minor updates in 4 days. I should do more tests before releasing something! 😬 🙄
+	</div>
+
+
+	<h2>v0.7.4</h2>
+
+	<ul>
+
+		<li>
+			<b>Fix:</b> Hex6 to Hex3 conversion is fixed now
+		</li>
+
+		<li>
+			<b>Fix:</b> alpha slider in color picker converts alpha 0 for Hex colors to "00" now (was sometimes converted to "ff" before)
+		</li>
+
+		<li>
+			<b>Fix:</b> recognition of CSS-Colors when the cursor is placed on a CSS-Color value in the document (f.e. "PowderBlue" was recognized as a "Blue" before)
+		</li>
+
+		<li>
+			<b>Fix:</b> editing multiple document colors with "0x"-prefix are now correctly refreshed in the Color Picker (before the Picker had to be closed and reopened)
+		</li>
+
+		<!----------------------------------------------------------------->
+
+		<li class="li-sep">
+			<b>Palettes:</b> New version of "CSS Colors" added ("RebeccaPurple" added). Run command "restore factory palettes" to get the new palette
+			(⚠️ Attention: overwrites existing factory palettes)
+		</li>
+
+	</ul>
+
+
+
+	<h2>v0.7.3</h2>
 
 		<ul>
-
 
 			<li>
 				The extension now opens in the sidebar
@@ -19,7 +54,7 @@
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>New Function:</b> Create Alpha-Steps
 			</li>
 
@@ -29,7 +64,7 @@
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Handling:</b> Sorting is now available in all modes by holding down the Alt-Key<br>
 				⚠️ <i>Attention! You may have to change a vscode setting to use this feature properly! Run command "color manager help" and read "Sort colors" for instructions!</i>
 			</li>
@@ -40,7 +75,7 @@
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Settings:</b> New setting "color-manager.contextMenu" -> Configure which commands appear in vscode's contextmenu
 			</li>
 
@@ -58,7 +93,7 @@
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Color Picker:</b> add- and replace-Button are now permanently available at the same time
 			</li>
 
@@ -76,16 +111,16 @@
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Intellisense:</b> the intellisense palette can now be chosen from a vscode quickpick (opening the user interface isn't required anymore)
 			</li>
 
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Palettes:</b> 3 new factory palettes added, "Affinity Photo Default Palette", "Jam3 Nice color palettes" with 500 color sets (2500 colors) and
-				"Pantone C". New version of "Google Material Palette 2014" added (better arranged for the compact view mode).
-				Run command "restore factory palettes" to get them (⚠️ Attention: overwrites existing factory palettes)
+				"Pantone C". New version of "Google Material Palette 2014" added (better arranged for the compact view mode). Run command "restore factory palettes"
+				to get the new palettes (⚠️ Attention: overwrites existing factory palettes)
 			</li>
 
 			<li>
@@ -93,8 +128,7 @@
 			</li>
 
 			<!----------------------------------------------------------------->
-
-			<li class="li-mt">
+			<li class="li-sep">
 				<b>Fix:</b> drag picker when window is scrolled
 			</li>
 
@@ -110,9 +144,10 @@
 				<b>Fix:</b> higher precsision when converting hex to hsl and back to hex
 			</li>
 
+
 			<!----------------------------------------------------------------->
 
-			<li class="li-mt">
+			<li class="li-sep">
 				... heavy code refactoring ... no new bugs please 🙏 😓
 			</li>
 

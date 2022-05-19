@@ -2,7 +2,7 @@
 	"name": "color-manager",
 	"displayName": "Color Manager",
 	"description": "color picker and color palette",
-	"version": "0.7.2",
+	"version": "0.7.4",
 	"publisher": "royaction",
 	"engines": {
 		"vscode": "^1.36.0"
@@ -195,6 +195,10 @@
 		"id": "2d8a7f8c-621f-42d0-9cf3-4a1524fe158e",
 		"publisherId": "af2e36a4-96a1-408e-ae9e-769372ff72de",
 		"publisherDisplayName": "Roy Action",
-		"installedTimestamp": 1633503891788
+		"installedTimestamp": 1652771389618,
+		"targetPlatform": "undefined",
+		"updated": true,
+		"isPreReleaseVersion": false,
+		"preRelease": false
 	}
 }

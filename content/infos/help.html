@@ -78,7 +78,6 @@
 <div class='div-toggle'>
 	<h3>Edit a color value in your document</h3>
 	<div>
-
 		Place the cursor on a color value in your document (doesnt have to be selected). Run the command "edit in color manager" or choose it from vscode's context
 		menu.
 		<img src="edit-doc-color.png">
@@ -101,7 +100,7 @@
 		If the cursor is not placed on a color value, the color will be inserted at the current position. Selections will always be replaced.
 		<br><br>
 
-		<i>Attention! As long as the color picker is opened, inserting is disabled!</i><br><br>
+		⚠️ <i>Attention! As long as the color picker is opened, inserting is disabled!</i><br><br>
 
 		<b>insert from list-view:</b>
 
@@ -131,7 +130,7 @@
 
 		Holding down the Alt-Key will automatically activate the sort-mode.<br><br>
 
-		Attention! You have to change some vscode settings to use this feature properly, otherwise vscode's menubar will capture the focus when you
+		⚠️ Attention! You have to change some vscode settings to use this feature properly, otherwise vscode's menubar will capture the focus when you
 		press the Alt-Key.<br><br>
 
 		Alternatively you can use the AltGr-Key, if you dont want to change the settings. AltGr will not capture the focus!<br><br>
@@ -233,7 +232,7 @@
 		Run the command "intellisense add palette" and choose a palette from the dropdown. This will add the selected palette to vscode's intellisense- or automplete-feature.
 		<br><br>
 
-		<i>Attention! This will only work if you have specified some languages in your vscode settings. Heres an example-configuration:</i><br><br>
+		⚠️ <i>Attention! This will only work if you have specified some languages in your vscode settings. Heres an example-configuration:</i><br><br>
 
 		<code>"color-manager.languages": [ "css", "html", "javascript", "json", "scss" ],</code>
 		<br><br>
@@ -266,6 +265,7 @@
 	<h3>Edit and insert a Hex-Color with the prefix "0x" instead of "#"</h3>
 	<div>
 
+		⚠️
 		<i>
 			Attention! Hex-Colors within the Webview-Extension are still handeled with the prefix "#", but you can edit "0x"-values in your document, and you can insert
 			"#"-values as "0x"-values to your document (this also affects the Autocomplete-feature)
@@ -368,7 +368,7 @@
 	<div>
 		Use the command "restore factory palettes" to restore the factory palettes and get new palettes that were included with an update.<br><br>
 
-		<i><b>Attention!</b> If you have customized existing factory palettes you should rename them before running the command, otherwise they will be overwritten.</i>
+		⚠️ <i><b>Attention!</b> If you have customized existing factory palettes you should rename them before running the command, otherwise they will be overwritten.</i>
 	</div>
 </div>
 

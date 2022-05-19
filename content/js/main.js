@@ -2,9 +2,11 @@
 
 	'use strict';
 
-	/* Todo: Falls es irgendwann mal ein webview blur event geben sollte, dann die Krücke für ctrl-combos unter doc_keydown() und colorwrapper_mousedown() entfernen
+	/*
+	TODO: Falls es irgendwann mal ein webview blur event geben sollte, dann die Krücke für ctrl-combos unter doc_keydown() und colorwrapper_mousedown() entfernen
 	und in dem Fall per vscode api eine message an das webview senden und ctrl_key + shift_key auf false setzen und die "multiselect"-Klasse vom main wrapper entfernen
-	(genaue Problembeschreibung siehe doc_keydown) */
+	(genaue Problembeschreibung siehe doc_keydown)
+	*/
 
 	// rgba_to_hsla _______________________________________________________________________________________________________________________________________________
 	const rgba_to_hsla = (arr) => {
@@ -144,7 +146,7 @@
 	// _______________________________________________________________________________________________________________________________________________
 
 	hex_add_alpha = (hex, alpha) => { // genauer als Umwandlung von hex in hsla und Rückwandlung in hexa!
-		return hex + (Math.round(Math.min(Math.max(alpha || 1, 0), 1) * 255)).toString(16);
+		return alpha === 0 ? hex + '00' : hex + (Math.round(Math.min(Math.max(alpha || 1, 0), 1) * 255)).toString(16);
 	},
 
 	// css color <> hex _______________________________________________________________________________________________________________________________________________
@@ -185,8 +187,12 @@
 	// _______________________________________________________________________________________________________________________________________________
 	short_hex_possible = (hex) => {
 		if(hex[1] === hex[2] && hex[3] === hex[4] && hex[5] === hex[6]){
-			if(hex.length === 9 && hex[7] === hex[8]) return 84; // HEX6a -> HEX3a
-			return 63; // HEX6 -> HEX3
+			if(hex.length === 7){
+				return 63; // HEX6 -> HEX3
+			}
+			else{ // len = 9 HEX6a
+				if(hex[7] === hex[8]) return 84; // HEX6a -> HEX3a
+			}
 		}
 		return false;
 	},
@@ -294,8 +300,8 @@
 				'lightsalmon','lightseagreen','lightskyblue','lightslategray','lightslategrey','lightsteelblue','lightyellow','lime','limegreen','linen','magenta',
 				'maroon','mediumaquamarine','mediumblue','mediumorchid','mediumpurple','mediumseagreen','mediumslateblue','mediumspringgreen','mediumturquoise',
 				'mediumvioletred','midnightblue','mintcream','mistyrose','moccasin','navajowhite','navy','oldlace','olive','olivedrab','orange','orangered','orchid',
-				'palegoldenrod','palegreen','paleturquoise','palevioletred','papayawhip','peachpuff','peru','pink','plum','powderblue','purple','red','rosybrown',
-				'royalblue','saddlebrown','salmon','sandybrown','seagreen','seashell','sienna','silver','skyblue','slateblue','slategray','slategrey','snow',
+				'palegoldenrod','palegreen','paleturquoise','palevioletred','papayawhip','peachpuff','peru','pink','plum','powderblue','purple','rebeccapurple','red',
+				'rosybrown','royalblue','saddlebrown','salmon','sandybrown','seagreen','seashell','sienna','silver','skyblue','slateblue','slategray','slategrey','snow',
 				'springgreen','steelblue','tan','teal','thistle','tomato','turquoise','violet','wheat','white','whitesmoke','yellow','yellowgreen', 'transparent'
 				].indexOf(str) === -1 ? false : 9;
 			}
@@ -373,30 +379,7 @@
 	},
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	open_picker = (init_color) => {
-
-		window.get_picker_dimensions = () => {
-
-			// Info! Wird auch bei "window_scroll_end()" ausgeführt und an "drag_head_mousedown()" übergeben!
-
-			const sat_rect_bcr = $sat_rect.getBoundingClientRect();
-
-			sat_rect_top = parseInt(sat_rect_bcr.top + window.scrollY);
-			sat_rect_left = parseInt(sat_rect_bcr.left);
-			sat_rect_width = $sat_rect.offsetWidth;
-			sat_rect_height = $sat_rect.offsetHeight;
-			sat_pointer_width = $sat_pointer.offsetWidth;
-
-			// identisch mit sat_rect (bei CSS-Änderung anpassen!)
-			alpha_slider_top = sat_rect_top;
-			alpha_slider_height = sat_rect_height;
-			alpha_pointer_width = $alpha_pointer.offsetWidth; // !!!
-
-			hue_slider_top = sat_rect_top;
-			hue_slider_height = sat_rect_height;
-			hue_pointer_width = alpha_pointer_width; // !!!
-
-		};
+	open_picker = (p_color, p_color_init) => { // p_color_init = undefined || str
 
 		// hsla > control positions _______________________________________________________________________________________________________________________________________________
 
@@ -500,9 +483,9 @@
 		// doc mouse _______________________________________________________________________________________________________________________________________________
 
 		// doc mousemove
-		picker_doc_mousemove_alpha = (e) => { picker_mousemove_alpha_slider(e); },
-		picker_doc_mousemove_sat =   (e) => { picker_mousemove_sat_rect(e); },
-		picker_doc_mousemove_hue =   (e) => { picker_mousemove_hue_slider(e); },
+		picker_doc_mousemove_alpha = (e) => picker_mousemove_alpha_slider(e),
+		picker_doc_mousemove_sat =   (e) => picker_mousemove_sat_rect(e),
+		picker_doc_mousemove_hue =   (e) => picker_mousemove_hue_slider(e),
 
 		// doc mouseup
 		picker_doc_mouseup = () => {
@@ -526,37 +509,38 @@
 			document.removeEventListener('mouseup', picker_doc_mouseup, false);
 			$picker_wrapper_outer.classList.remove('picker-mousehold'); // pointer-events: all entfernen
 
-			store_settings(); // picker_color speichern
+
+
+			picker_color = p_color; // "p_color" wird unter "picker_set_color_str()" aktualisiert
+			store_settings(); // "picker_color" speichern (wurde unter "picker_set_color_str()" aktualisiert)
 
 		},
-
-		// preview _______________________________________________________________________________________________________________________________________________
-		picker_preview_color = () => {
-			$alpha_slider.style.background = 'linear-gradient(to bottom, hsl('+arr_hsla[0]+','+arr_hsla[1]+'%,'+arr_hsla[2]+'%)'+', transparent)';
-			$sat_rect.style.background = 'hsl('+arr_hsla[0]+', 100%, 50%)';
-			$sat_pointer.style.background = 'hsl('+arr_hsla[0]+','+arr_hsla[1]+'%,'+arr_hsla[2]+'%)';
-			$hue_pointer.style.background = 'hsl('+arr_hsla[0]+', 100%, 50%)';
-			$picker_preview_new.style.background = 'hsla('+arr_hsla[0]+','+ arr_hsla[1]+'%,'+ arr_hsla[2]+'%,'+arr_hsla[3]+')';
-		},
-
-		// replace color text _______________________________________________________________________________________________________________________________________________
+		// _______________________________________________________________________________________________________________________________________________
 		picker_set_color_str = () => {
 
-			// picker_csys: false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color | 10 = gradient
+			// arr_hsla in aktuelles Farbsystem umwandeln und den Wert neben dem convert-Button anzeigen
+
+			// p_csys: 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color | 10 = gradient
 
 			// [h,s,l]  ||  [h,s,l,a]  ?
 			const arr_hsl_or_hsla = arr_hsla[3] < 1 ? arr_hsla : [arr_hsla[0], arr_hsla[1], arr_hsla[2]];
 
+
+			// p_color_is_invalid zurücksetzen? Spätestens jetzt hat User eines der 3 Controls bewegt und damit ist "INVALID COLOR VALUE" nicht mehr gültig!
+			if(p_color_is_invalid === true) p_color_is_invalid = false;
+
+
 			// aktuelles Farbsystem ist rgb(a) --------------------------------------------------------------------------------------
-			if(picker_csys === 5 || picker_csys === 6) {
-				picker_color = arr_rgba_hsla_to_str(hsla_to_rgba(arr_hsl_or_hsla), 'rgb'); // c_sys = 'rgb' || 'hsl'
+			if(p_csys === 5 || p_csys === 6) {
+				p_color = arr_rgba_hsla_to_str(hsla_to_rgba(arr_hsl_or_hsla), 'rgb'); // c_sys = 'rgb' || 'hsl'
 			}
 			// aktuelles Farbsystem ist hsl(a) --------------------------------------------------------------------------------------
-			else if(picker_csys === 7 || picker_csys === 8) {
-				picker_color = arr_rgba_hsla_to_str(arr_hsl_or_hsla, 'hsl'); // c_sys = 'rgb' || 'hsl'
+			else if(p_csys === 7 || p_csys === 8) {
+				p_color = arr_rgba_hsla_to_str(arr_hsl_or_hsla, 'hsl'); // c_sys = 'rgb' || 'hsl'
 			}
 			// aktuelles Farbsystem ist hex oder css --------------------------------------------------------------------------------------
 			else{
+
 
 				// Wenn der Hex noch immer auf dem Ausgangswert ist, dann alpha-Transparenz an Ausgangswert anhängen, da bessere
 				// Präzision als Umwandlung von hex in hsla und Rückumwandlung
@@ -564,7 +548,7 @@
 				let convert_arr_hsla_to_hex = false;
 
 				// Ausgangswert war rgb(a) oder hsl(a)
-				if(picker_csys_init > 4 && picker_csys_init < 9) {
+				if(p_csys_init > 4 && p_csys_init < 9) {
 					convert_arr_hsla_to_hex = true;
 				}
 				// Ausgangswert war hex|css ...
@@ -578,54 +562,54 @@
 					else{
 
 						//  Ausgangsfarbe war HEX6 || HEX6a
-						if(picker_csys_init === 1 || picker_csys_init === 2){
+						if(p_csys_init === 1 || p_csys_init === 2){
 
-							picker_color = init_color.substr(0,7); // bei HEX6a, die ursprüngliche Transparenz vorerst abschneiden (HEX6 bleibt so)
+							p_color = p_color_init.substr(0,7); // bei HEX6a, die ursprüngliche Transparenz vorerst abschneiden (HEX6 bleibt so)
 
 							// ist aktuell eine Transparenz vorhanden?
 							if(arr_hsla[3] < 1){
-								picker_color = hex_add_alpha(picker_color, arr_hsla[3]); // da alpha bei shorthex aus nur einem Zeichen besteht sind keine 2-stelligen alpha-Transparenzen möglich (daher Umwandung in normalen Hex)
+								p_color = hex_add_alpha(p_color, arr_hsla[3]); // da alpha bei shorthex aus nur einem Zeichen besteht sind keine 2-stelligen alpha-Transparenzen möglich (daher Umwandung in normalen Hex)
 							}
 
 						}
 						//  Ausgangsfarbe war HEX3 || HEX3a
-						else if(picker_csys_init === 3 || picker_csys_init === 4) {
+						else if(p_csys_init === 3 || p_csys_init === 4) {
 
-							picker_color = init_color.substr(0,4); // bei HEX3a, die ursprüngliche Transparenz vorerst abschneiden (HEX3 bleibt so)
+							p_color = p_color_init.substr(0,4); // bei HEX3a, die ursprüngliche Transparenz vorerst abschneiden (HEX3 bleibt so)
 
 							// ist aktuell eine Transparenz vorhanden?
 							if(arr_hsla[3] < 1){
 								// da alpha bei shorthex aus nur einem Zeichen besteht sind keine 2-stelligen alpha-Transparenzen möglich (daher Umwandung in normalen Hex)
-								picker_color = hex_add_alpha( convert_short_hex(picker_color, 36), arr_hsla[3] );
+								p_color = hex_add_alpha( convert_short_hex(p_color, 36), arr_hsla[3] );
 							}
 
 						}
 						//  Ausgangsfarbe war CSS
-						else if(picker_csys_init === 9) {
+						else if(p_csys_init === 9) {
 
 							// aktuell ist keine Transparenz vorhanden
 							if(arr_hsla[3] === 1){
 
 								// aktuelles Farbsystem ist CSS
-								if(picker_csys === 9){
+								if(p_csys === 9){
 
 									// Sonderfall: Ausgangswert war "transparent"
-									if(init_color.toLowerCase() === 'transparent'){
-										picker_color = css_hex_init; // wenn alpha-Slider ganz oben, "#000000" anzeigen!
+									if(p_color_init.toLowerCase() === 'transparent'){
+										p_color = css_hex_init; // wenn alpha-Slider ganz oben, "#000000" anzeigen!
 									}
 									// Zurücksetzen auf CSS-Namen
 									else{
-										picker_color = init_color;
+										p_color = p_color_init;
 									}
 
 								}
 								// aktuelles Farbsystem ist HEX6 || HEX6a
-								else if(picker_csys === 1 || picker_csys === 2){
-									picker_color = css_hex_init; // Zurücksetzen auf HEX6-Wert des CSS-Namens
+								else if(p_csys === 1 || p_csys === 2){
+									p_color = css_hex_init; // Zurücksetzen auf HEX6-Wert des CSS-Namens
 								}
 								// aktuelles Farbsystem ist HEX3 || HEX3a
-								else if(picker_csys === 3 || picker_csys === 4){
-									picker_color = convert_short_hex(css_hex_init, 63); // Zurücksetzen auf HEX3-Wert des CSS-Namens
+								else if(p_csys === 3 || p_csys === 4){
+									p_color = convert_short_hex(css_hex_init, 63); // Zurücksetzen auf HEX3-Wert des CSS-Namens
 								}
 
 
@@ -634,12 +618,12 @@
 							else{
 
 								// Sonderfall: Ausgangswert war "transparent"
-								if(init_color.toLowerCase() === 'transparent' && arr_hsl_or_hsla[3] === 0){
-									picker_color = init_color; // wenn alpha-Slider ganz unten, "Transparent" anzeigen
+								if(p_color_init.toLowerCase() === 'transparent' && arr_hsl_or_hsla[3] === 0){
+									p_color = p_color_init; // wenn alpha-Slider ganz unten, "Transparent" anzeigen
 								}
 								// bei css-Farbe mit Transparenz ergibt sich immer HEX6a!
 								else{
-									picker_color = hex_add_alpha( css_hex_init, arr_hsla[3] );
+									p_color = hex_add_alpha( css_hex_init, arr_hsla[3] );
 								}
 
 							}
@@ -650,79 +634,113 @@
 				}
 
 
-				if(convert_arr_hsla_to_hex === true) picker_color = str_rgba_to_hex(arr_rgba_hsla_to_str( hsla_to_rgba(arr_hsl_or_hsla), 'rgb'));
+				if(convert_arr_hsla_to_hex === true) p_color = str_rgba_to_hex(arr_rgba_hsla_to_str( hsla_to_rgba(arr_hsl_or_hsla), 'rgb'));
 
 			} // Ende hex || css
 
 
 			// set picker str ---------------------------------------------------------------------------------------------------------------------
-			$picker_color_text.textContent = picker_color;
-
-			// Falls immer noch der error-bg angezeigt wird, hat der user spätestens jetzt die controls bewegt und einen korrekten Wert erzeugt!
-			if(picker_csys === false) check_colors(picker_color);
+			$picker_color_text.textContent = p_color;
 
 		},
 
-		// replace color text _______________________________________________________________________________________________________________________________________________
-		picker_invalid_color = () => {
-			$sat_rect.style.background = '#f00'; // rot weil hue-slider bei init ganz oben
+		// _______________________________________________________________________________________________________________________________________________
+		picker_preview_new_color = () => {
+			$alpha_slider.style.background = 'linear-gradient(to bottom, hsl('+arr_hsla[0]+','+arr_hsla[1]+'%,'+arr_hsla[2]+'%)'+', transparent)';
+			$sat_rect.style.background = 'hsl('+arr_hsla[0]+', 100%, 50%)';
+			$sat_pointer.style.background = 'hsl('+arr_hsla[0]+','+arr_hsla[1]+'%,'+arr_hsla[2]+'%)';
+			$hue_pointer.style.background = 'hsl('+arr_hsla[0]+', 100%, 50%)';
+			$picker_preview_new.style.background = 'hsla('+arr_hsla[0]+','+ arr_hsla[1]+'%,'+ arr_hsla[2]+'%,'+arr_hsla[3]+')';
+		},
+
+		//  _______________________________________________________________________________________________________________________________________________
+		picker_preview_init_color_valid = () => {
+			$picker_preview_init.style.background = 'hsla('+arr_hsla_init[0]+','+ arr_hsla_init[1]+'%,'+ arr_hsla_init[2]+'%,'+arr_hsla_init[3]+')';
+			$picker_color_text.textContent = p_color;
+		},
+
+		picker_preview_init_color_invalid = () => {
+			$sat_rect.style.background = '#f00'; // rot weil hue-slider bei init ganz oben stehen muss
 			$picker_color_text.textContent = str_invalid_color;
-			$picker_preview_sel.style.background = 'linear-gradient(135deg, transparent 0%, transparent 48%, red 50%, transparent 52%, transparent 100%)';
-			$picker_preview_new.style.background = '#fff';
+			$picker_preview_init.style.background = 'linear-gradient(135deg, transparent 0%, transparent 48%, red 50%, transparent 52%, transparent 100%)';
+			$picker_preview_new.style.background = p_color_invalid; // #ffffff
 		},
 
 		// switch color system _______________________________________________________________________________________________________________________________________________
 		picker_btn_switch_mousedown = () => {
 
-			if(picker_csys !== false){ // invalid color
+			if(p_color_is_invalid === true) return; // ███ exit ███
 
-				// Auf Ausgangsfarbe zurücksetzen? (da HSL zu HEX-Umwandlung zu Ungenauigkeiten führt / vscode-onboard-Picker macht genau das Gleiche)
+			// Auf Ausgangsfarbe zurücksetzen? (da HSL zu HEX-Umwandlung zu Ungenauigkeiten führt / vscode-onboard-Picker macht genau das Gleiche)
 
-				let reset_to_init_color = false;
+			let reset_color = false;
 
-				// picker_csys: false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color | 10 = gradient
+			// p_csys: false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color | 10 = gradient
 
-				// --------------------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------------------
 
-				// (noch) aktuelles System ist hsl (also eine Stufe vor Sprung zu CSS oder HEX)
-				if(picker_csys === 7 || picker_csys === 8){
+			// (noch) aktuelles System ist hsl (also eine Stufe vor Sprung zu CSS oder HEX)
+			if(p_csys === 7 || p_csys === 8){
 
-					// H, S und L haben sich nicht geändert!
-					if( arr_hsla[0] === arr_hsla_init[0] || arr_hsla[1] === arr_hsla_init[1] || arr_hsla[2] === arr_hsla_init[2]) {
+				// H, S und L haben sich nicht geändert!
+				if( arr_hsla[0] === arr_hsla_init[0] || arr_hsla[1] === arr_hsla_init[1] || arr_hsla[2] === arr_hsla_init[2]) {
 
-						// aktuelle Farbe hat keine Transparenz ------------------------------
-						if(arr_hsla[3] === 1) {
+					// aktuelle Farbe hat keine Transparenz ------------------------------
+					if(arr_hsla[3] === 1) {
 
-							// Ausgangsfarbe war HEX6 oder CSS (also ohne Transparenz)
-							if(picker_csys_init === 1 || picker_csys_init === 9) {
-								picker_color = init_color; // zurücksetzen
-								picker_csys = picker_csys_init; // zurücksetzen
-								reset_to_init_color = true;
+						// Ausgangsfarbe war HEX6
+						if(p_csys_init === 1) {
+							p_color = p_color_init; // zurücksetzen
+							p_csys = p_csys_init; // zurücksetzen
+							reset_color = true;
+						}
+						// Ausgangsfarbe war HEX6a
+						else if(p_csys_init === 2) {
+							p_color = p_color_init.substr(0,7); // alpha abschneiden
+							p_csys = 1; // HEX6
+							reset_color = true;
+						}
+						// Ausgangsfarbe war CSS
+						else if(p_csys_init === 9) {
 
+							// Sonderfall: Ausgangswert war "transparent"
+							if(p_color_init.toLowerCase() === 'transparent'){
+								p_color = '#000000';
+								p_csys = 1;
 							}
-							// Ausgangsfarbe war HEX6a
-							else if(picker_csys_init === 2) {
-								picker_color = init_color.substr(0,7); // alpha abschneiden
-								picker_csys = 1; // HEX6
-								reset_to_init_color = true;
+							else{
+								p_color = p_color_init; // zurücksetzen
+								p_csys = p_csys_init; // zurücksetzen
 							}
+
+							reset_color = true;
 
 						}
-						// aktuelle Farbe hat Transparenz ---------------------------------------
-						else{
 
-							// Ausgangsfarbe war HEX6 || HEX6a
-							if(picker_csys_init === 1 || picker_csys_init === 2) {
-								picker_color = hex_add_alpha(init_color.substr(0,7), arr_hsla[3]);
-								picker_csys = 2; // HEX6a
-								reset_to_init_color = true;
+					}
+					// aktuelle Farbe hat Transparenz ---------------------------------------
+					else{
+
+						// Ausgangsfarbe war HEX6 || HEX6a
+						if(p_csys_init === 1 || p_csys_init === 2) {
+							p_color = hex_add_alpha(p_color_init.substr(0,7), arr_hsla[3]);
+							p_csys = 2; // HEX6a
+							reset_color = true;
+						}
+						// Ausgangsfarbe war CSS
+						else if(p_csys_init === 9) {
+
+							// Sonderfall: Ausgangswert war "transparent"
+							if(p_color_init.toLowerCase() === 'transparent' && arr_hsla[3] === 0){
+								p_color = p_color_init;
+								p_csys = p_csys_init; // zurücksetzen
 							}
-							// Ausgangsfarbe war CSS
-							else if(picker_csys_init === 9) {
-								picker_color = hex_add_alpha(css_hex_init, arr_hsla[3]);
-								picker_csys = 2; // HEX6a
-								reset_to_init_color = true;
+							else{
+								p_color = hex_add_alpha(css_hex_init, arr_hsla[3]);
+								p_csys = 2; // HEX6a
 							}
+
+							reset_color = true;
 
 						}
 
@@ -730,35 +748,40 @@
 
 				}
 
-				// --------------------------------------------------------------------------------------------------------
-
-				if(reset_to_init_color === false) {
-					const arr_result = switch_color_system(picker_color);
-					picker_csys = arr_result[0];
-					picker_color = arr_result[1];
-				}
-
-				$picker_color_text.textContent = picker_color;
-
 			}
+
+			// --------------------------------------------------------------------------------------------------------
+
+			if(reset_color === false) {
+				const arr_result = switch_color_system(p_color);
+				p_csys = arr_result[0];
+				p_color = arr_result[1];
+			}
+
+			$picker_color_text.textContent = p_color;
+
+			// global aktualisieren
+			picker_color = p_color;
+
 
 		},
 
 		// reset color _______________________________________________________________________________________________________________________________________________
-		picker_preview_sel_click = () => {
-			if(init_color !== '') { // INVALID COLOR VALUE
-				picker_refresh(init_color);
-			}
+		picker_preview_init_click = () => {
+			if(p_color_init_is_invalid === false) picker_refresh(p_color_init);
 		},
 
 		// btn add replace _______________________________________________________________________________________________________________________________________________
 
 		picker_add_colors = () => {
-			add_colors([picker_color], [picker_color], c_cid, false);
-			$picker_preview_sel.style.background = picker_color;
+			if(p_color_is_invalid === true) return; // ███ exit ███
+			add_colors([p_color], [p_color], c_cid, false);
+			$picker_preview_init.style.background = p_color;
 		},
 
 		picker_replace_color = () => {
+
+			if(p_color_is_invalid === true) return; // ███ exit ███
 
 			const 	arr_replace_ids = get_selected_ids(),
 					replace_len = arr_replace_ids.length;
@@ -768,9 +791,9 @@
 			if(replace_len > 0){
 
 				for (i = 0; i < replace_len; i++) {
-					arr_c[arr_replace_ids[i]] = picker_color;
-					arr_b[arr_replace_ids[i]] = picker_csys !== false ? picker_color : color_error_bg;
-					$color_inputs_c[arr_replace_ids[i]].value = picker_csys !== false ? picker_color : str_invalid_color;
+					arr_c[arr_replace_ids[i]] = p_color;
+					arr_b[arr_replace_ids[i]] = p_csys !== false ? p_color : color_error_bg;
+					$color_inputs_c[arr_replace_ids[i]].value = p_csys !== false ? p_color : str_invalid_color;
 					$color_spans[arr_replace_ids[i]].style.background = arr_b[arr_replace_ids[i]];
 				}
 
@@ -781,10 +804,14 @@
 
 		// insert doc  _______________________________________________________________________________________________________________________________________________
 		picker_btn_insert_mousedown = () => {
+
+			if(p_color_is_invalid === true) return; // ███ exit ███
+
 			vscode.postMessage({ // ███ vscode APi ███
 				command: 'insert',
-				insert_val: picker_color
+				insert_val: p_color
 			});
+
 		},
 
 		// outer wrapper scroll  _______________________________________________________________________________________________________________________________________________
@@ -829,28 +856,64 @@
 		},
 
 		// _______________________________________________________________________________________________________________________________________________
-		set_picker_init_vars = (str_color) => {
+		picker_check_hex_prefix = (str_color) => { // "0x" durch "#" ersetzen?
+			return str_color.substr(0,2) === '0x' ? '#' + str_color.substr(2, str_color.length) : str_color;
+		},
 
-			// Ausgangswerte festlegen: picker_csys, arr_hsla und ggf. css_hex_init (für Farbe beim Öffnen, oder wenn der Picker aktualisiert wird ("picker_refresh()")
+		// _______________________________________________________________________________________________________________________________________________
+		picker_set_init_vars = () => {
 
-			const arr_result = get_color_metrics(str_color); // [csys, arr_hsla, css_hex_init]
+			// Ausgangswerte festlegen: p_csys, arr_hsla und ggf. css_hex_init (für Farbe beim Öffnen, oder wenn der Picker aktualisiert wird ("picker_refresh()")
 
-			picker_csys = arr_result[0]; // csys (false, 1 ... 9)
+			let arr_result = get_color_metrics(p_color_init); // [csys, arr_hsla, css_hex_init]
+
+			p_csys = arr_result[0]; // csys (false, 1 ... 9)
 
 			// erfolgreich
-			if(picker_csys !== false){
+			if(p_csys !== false){
 				arr_hsla = arr_result[1]; // arr_hsla
 				css_hex_init = arr_result[2]; // css_hex_init
 			}
 			// nicht erfolgreich
 			else{
-				picker_color = ''; // muss string sein (nicht 0 oder false) sonst später Fehler bei substr ("substr is not a function ...")
-				arr_hsla = arr_hsla_default;
+				p_color_init_is_invalid = true;
+				p_color_is_invalid = true;
+				arr_hsla = arr_hsla_invalid.slice();
+				p_color = p_color_invalid;
+				p_color_init = p_color_invalid;
+				p_csys = 1; // p_color_invalid / #ffffff
 			}
 
 			// speichern für Vergleiche
 			arr_hsla_init = arr_hsla.slice();
-			picker_csys_init = picker_csys;
+			p_csys_init = p_csys;
+
+
+			// 2 unterschiedliche Farben für "p_color" und "p_color_init" übergeben? (nur bei "init_cm()" der Fall)
+			if(p_color !== p_color_init){
+
+				arr_result = get_color_metrics(p_color); // [csys, arr_hsla, css_hex_init]
+
+				p_csys = arr_result[0]; // csys (false, 1 ... 9)
+
+				// erfolgreich
+				if(p_csys !== false){
+					p_color_is_invalid = false;
+					arr_hsla = arr_result[1]; // arr_hsla
+				}
+				// nicht erfolgreich
+				else{
+					p_color_is_invalid = true;
+					p_color = p_color_invalid;
+					arr_hsla = arr_hsla_invalid.slice();
+					p_csys = 1; // p_color_invalid / #ffffff
+				}
+
+			}
+
+			// globals aktualisieren
+			picker_color = p_color;
+			picker_color_init = p_color_init;
 
 		},
 
@@ -866,7 +929,7 @@
 		$picker_btn_add  		 = document.createElement('p'),
 		$picker_btn_replace  	 = document.createElement('p'),
 		$picker_preview_new      = document.createElement('span'),
-		$picker_preview_sel      = document.createElement('span'),
+		$picker_preview_init     = document.createElement('span'),
 
 		$picker_btn_switch		 = document.createElement('p'),
 		$picker_color_text       = document.createElement('div'),
@@ -883,16 +946,20 @@
 
 		$picker_btn_insert       = document.createElement('p'),
 
-		arr_hsla_default = [0, 0, 100, 1], // falls check_colors false zurückgibt
-
+		p_color_invalid = '#ffffff',
+		arr_hsla_invalid = [0, 0, 100, 1], // = "#ffffff"
 		str_invalid_color = 'INVALID COLOR VALUE';
 
-		// def let ---------------------------------------------------
+
+		// def let -----------------------------------------------------------------------------------------------------------------------------
 		let arr_hsla = [],
 			arr_hsla_init = [],
 
-			picker_csys = false,  // false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color
-			picker_csys_init = false,
+			p_csys = false,  // false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color
+			p_csys_init = false,
+
+			p_color_init_is_invalid = false,
+			p_color_is_invalid = false,
 
 			css_hex_init = '',
 
@@ -921,43 +988,72 @@
 
 			$el = null; // dummy (mehrfach verwendet)
 
-		// def window ---------------------------------------------------
+		// def window -----------------------------------------------------------------------------------------------------------------------------
 
-		window.picker_refresh = (new_color) => {
+		window.get_picker_dimensions = () => {
 
-			init_color = new_color;
-			set_picker_init_vars(new_color);
+			// Info! Wird auch bei "window_scroll_end()" ausgeführt und an "drag_head_mousedown()" übergeben!
 
-			if(picker_csys !== false){
-				$picker_preview_sel.style.background = 'hsla('+arr_hsla[0]+','+ arr_hsla[1]+'%,'+ arr_hsla[2]+'%,'+arr_hsla[3]+')';
-				$picker_color_text.textContent = picker_color;
-				picker_hsla_to_control_positions(arr_hsla);
-				picker_preview_color();
-			}
-			else{
-				picker_invalid_color();
-			}
+			const sat_rect_bcr = $sat_rect.getBoundingClientRect();
+
+			sat_rect_top = parseInt(sat_rect_bcr.top + window.scrollY);
+			sat_rect_left = parseInt(sat_rect_bcr.left);
+			sat_rect_width = $sat_rect.offsetWidth;
+			sat_rect_height = $sat_rect.offsetHeight;
+			sat_pointer_width = $sat_pointer.offsetWidth;
+
+			// identisch mit sat_rect (bei CSS-Änderung anpassen!)
+			alpha_slider_top = sat_rect_top;
+			alpha_slider_height = sat_rect_height;
+			alpha_pointer_width = $alpha_pointer.offsetWidth; // !!!
+
+			hue_slider_top = sat_rect_top;
+			hue_slider_height = sat_rect_height;
+			hue_pointer_width = alpha_pointer_width; // !!!
 
 		};
 
-		// close
+		// -----------------------------------------------------------------------------------------------------------------------------
+		window.picker_refresh = (p_color_new) => {
+
+			// ggf. "0x"-Hex durch "#"-Hex ersetzen
+			p_color_new = picker_check_hex_prefix(p_color_new);
+
+			p_color = p_color_new;
+			p_color_init = p_color_new; // "picker_refresh()" wird nur von Funktionen aufgerufen bei denen die Init-Farbe immer auch die anzuzeigende Farbe ist!
+			picker_set_init_vars();
+
+			if(p_color_init_is_invalid === false) picker_preview_init_color_valid(); // "p_color_init_is_invalid" wird in "picker_set_init_vars()" gesetzt!
+			else picker_preview_init_color_invalid();
+
+			picker_hsla_to_control_positions(arr_hsla);
+			picker_preview_new_color();
+
+		};
+
+		// -----------------------------------------------------------------------------------------------------------------------------
 		window.picker_close = () => {
 			drag_head_splice($picker_head);
 			window.removeEventListener('resize', picker_window_resize, false);
 			document.body.removeChild($picker_wrapper_outer);
 			picker_prevent_insert(false);
 			picker_open = false;
-			store_settings();
+			store_settings(); // picker_open, picker_color, picker_color_init
 		};
 
-		// START open_picker ____________________________________________________________________________________________________________
+		// _________________________________________________________________________________________________________________________________________________
+		// START open_picker _______________________________________________________________________________________________________________________________
+		// _________________________________________________________________________________________________________________________________________________
 
-		// 0x-Hex > "0x" durch "#" ersetzen?
-		if(init_color.substr(0,2) === '0x') init_color = '#' + init_color.substr(2, init_color.length);
+		// "p_color_init" gesetzt? Info! Nur "init_cm()" übergibt "p_color" und "p_color_init". Alle anderen Funktionen (z.B. Contextmenu) übergeben nur "p_color".
+		if(p_color_init === undefined) p_color_init = p_color;
 
+		// ggf. "0x"-Hex durch "#"-Hex ersetzen
+		p_color = picker_check_hex_prefix(p_color);
+		p_color_init = picker_check_hex_prefix(p_color_init);
 
-		// "picker_csys" + "arr_hsla" festlegen! -----------------------------------------------------------------------------------------
-		set_picker_init_vars(init_color);
+		// "p_csys" + "arr_hsla" festlegen!
+		picker_set_init_vars();
 
 		// ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -987,18 +1083,17 @@
 		$picker_btn_replace.id = 'picker-btn-replace';
 		$picker_btn_replace.addEventListener('mousedown', picker_replace_color, false); // mousedown, wegen doc mouseup
 
-		// span selected
-		$picker_preview_sel.id = 'picker-preview-sel';
-		$picker_preview_sel.style.background = picker_csys !== false ? 'hsla('+arr_hsla[0]+','+ arr_hsla[1]+'%,'+ arr_hsla[2]+'%,'+arr_hsla[3]+')' : '';
-		$picker_preview_sel.addEventListener('mousedown', picker_preview_sel_click, false); // mousedown, wegen doc mouseup
+		// span preview init
+		$picker_preview_init.id = 'picker-preview-init';
+		$picker_preview_init.addEventListener('mousedown', picker_preview_init_click, false); // mousedown, wegen doc mouseup
 
-		// span new
+		// span preview new
 		$picker_preview_new.id = 'picker-preview-new';
 
 		$picker_preview_wrapper.appendChild($picker_btn_add);
 		$picker_preview_wrapper.appendChild($picker_btn_replace);
 		$picker_preview_wrapper.appendChild($picker_preview_new);
-		$picker_preview_wrapper.appendChild($picker_preview_sel);
+		$picker_preview_wrapper.appendChild($picker_preview_init);
 		$picker_wrapper.appendChild($picker_preview_wrapper);
 
 		// btn switch / color val -----------------------------------------
@@ -1059,14 +1154,11 @@
 
 
 		// ---------------------------------------------------------
-		if(picker_csys !== false){
-			$picker_color_text.textContent = picker_color;
-			picker_preview_color();
-		}
-		else{
-			// anzuzeigende Farbe bleibt auf init (siehe css)
-			picker_invalid_color();
-		}
+		if(p_color_init_is_invalid === false) picker_preview_init_color_valid(); // "p_color_init_is_invalid" wird in "picker_set_init_vars()" gesetzt!
+		else picker_preview_init_color_invalid();
+
+
+		picker_preview_new_color();
 
 		// drag head
 		drag_head_push($picker_head, $picker_wrapper, $picker_wrapper_outer, get_picker_dimensions); // custom_func_when_moved = get_picker_dimensions() (Picker-Positionen aktualisieren)
@@ -1082,52 +1174,73 @@
 
 		get_picker_dimensions();
 
-		if(picker_csys !== false) picker_hsla_to_control_positions(arr_hsla);
+		// controls auf Positionen verschieben (kann erst nach "get_picker_dimensions()" gemacht werden)
+		picker_hsla_to_control_positions(arr_hsla);
 
-		store_settings();
+
+		store_settings(); // picker_open, picker_color, picker_color_init ("picker_open" kurz zuvor unter "prepare_open_picker()" gesetzt)
 
 	},
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
-	prepare_open_picker = (picker_color) => { // picker_color getrimmt (siehe extension.js)
+	prepare_open_picker = (p_color) => {
 
 		// picker bereits geöffnet oder noch geschlossen ?
 		if(picker_open === false){
 			picker_open = true;
-			open_picker(picker_color);
+			open_picker(p_color);
 		}
 		else{
-			picker_refresh(picker_color);
+			picker_refresh(p_color);
 		}
 
 	},
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
-	// benutzt von picker und color color wrapper switch
+	// benutzt von picker und color wrapper switch
 
 	switch_color_system = (str_color) => {
 
 		const check_result = check_colors(str_color); // return: false | 1 = HEX6 | 2 = HEX6a | 3 = HEX3 | 4 = HEX3a | 5 = rgb | 6 = rgba | 7 = hsl | 8 = hsla | 9 = css color | 10 = gradient
 		let	str_color_new = '',
-			csys_new = -1;
+		csys_new = -1;
 
-		// HEX3 -> HEX6 -> RGB > HSL -> CSS
 
-		// HEX6(a) -> RGB(a) -----------------------------------------------------------------------------------------------------
+		// HEX6a -> HEX3a (wenn möglich) -> RGBa > HSLa -> CSS
+
+		// HEX6a -> HEX3a || RGBa -----------------------------------------------------------------------------------------------------
 		if(check_result === 1 || check_result === 2){
-			str_color_new = hex_to_rgba(str_color, true); // true = return string, false = return array
-			csys_new = 4 + check_result; // ergibt 5 oder 6
+
+			// HEX3(a) möglich?
+			const short_hex_result = short_hex_possible(str_color); // false || 63 || 84
+
+			// -> HEX3
+			if(short_hex_result === 63){
+				str_color_new = convert_short_hex(str_color, 63); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
+				csys_new = 3;
+			}
+			// -> HEX3a
+			else if(short_hex_result === 84){
+				str_color_new = convert_short_hex(str_color, 84); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
+				csys_new = 4;
+			}
+			// -> RGB
+			else{
+				str_color_new = hex_to_rgba(str_color, true); // true = return string, false = return array
+				csys_new = 4 + check_result; // ergibt 5 oder 6 (rgb || rgba)
+			}
+
 		}
-		// HEX3 -> HEX6 -----------------------------------------------------------------------------------------------------
+		// HEX3 -> RGB -----------------------------------------------------------------------------------------------------
 		else if(check_result === 3){
-			str_color_new = convert_short_hex(str_color, 36); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
-			csys_new = 1;
+			str_color_new = hex_to_rgba( convert_short_hex(str_color, 36), true); // true = return string, false = return array
+			csys_new = 5;
 		}
-		// HEX3a -> HEX6a -----------------------------------------------------------------------------------------------------
+		// HEX3a -> RGBa -----------------------------------------------------------------------------------------------------
 		else if(check_result === 4){
-			str_color_new = convert_short_hex(str_color, 48); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
-			csys_new = 2;
+			str_color_new = hex_to_rgba( convert_short_hex(str_color, 48), true); // true = return string, false = return array
+			csys_new = 6;
 		}
 		// RGB(a) -> HSL(a) -----------------------------------------------------------------------------------------------------
 		else if(check_result === 5 || check_result === 6){
@@ -1140,44 +1253,11 @@
 			// HSL -> HEX ACHTUNG!!! Hier Ungenauigkeiten (siehe Erklärung ganz oben)
 			str_color_new = str_rgba_to_hex(arr_rgba_hsla_to_str(hsla_to_rgba( str_rgba_hsla_to_arr(str_color) ), 'rgb'));
 
-			// HEX3 | HEX3a möglich?
-			const short_hex_result = short_hex_possible(str_color_new); // false || 63 || 84
-
-			if(short_hex_result === 63){
-				str_color_new = convert_short_hex(str_color_new, 63); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
-				csys_new = 3;
-			}
-			else if(short_hex_result === 84){
-				str_color_new = convert_short_hex(str_color_new, 84); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
-				csys_new = 4;
-			}
-			else{
-				csys_new = 1;
-			}
-
 		}
 		// css-color: CSS -> HEX -----------------------------------------------------------------------------------------------------
 		else if(check_result === 9){
-
-			if(str_color.toLowerCase() === 'transparent'){
-				str_color_new = '#0000';
-				csys_new = 1;
-			}
-			else{
-
-				str_color_new = css_to_hex(str_color);
-
-				// HEX3 möglich?
-				if(short_hex_possible(str_color_new) === 63){ // false || 63 || 84
-					str_color_new = convert_short_hex(str_color_new, 63); // type: 36 = #fff -> #ffffff | 48 = #fff3 -> #ffffff33 | 63 = #ffffff -> #fff | 84 = #ffffff33 -> #fff3
-					csys_new = 3;
-				}
-				else{
-					csys_new = 1;
-				}
-
-			}
-
+			str_color_new = str_color.toLowerCase() === 'transparent' ? '#00000000' : css_to_hex(str_color);
+			csys_new = 1;
 		}
 		// gradient -----------------------------------------------------------------------------------------------------
 		else if(check_result === 10){
@@ -1301,7 +1381,7 @@
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
-	add_colors = (arr_new_n, arr_new_c, insert_pos, select_new_colors) => { // arr_new_n = array oder true (neue Farbe)    insert_pos entspricht entweder c_cid oder c_len (wenn am Ende eingefügt werden soll)
+	add_colors = (arr_new_n, arr_new_c, insert_pos, select_p_colors) => { // arr_new_n = array oder true (neue Farbe)    insert_pos entspricht entweder c_cid oder c_len (wenn am Ende eingefügt werden soll)
 
 		// benutzt von picker, control-button und contextmenu
 
@@ -1536,7 +1616,7 @@
 		}
 
 		// neu Hinzugefügte markieren?
-		if(select_new_colors === true){
+		if(select_p_colors === true){
 
 			if(sel_len > 0) reset_selection(true);
 
@@ -4548,8 +4628,10 @@
 		if(window.scroll_end_timeout) clearTimeout(window.scroll_end_timeout);
 		window.scroll_end_timeout = setTimeout(() => {
 			store_scroll_pos = window.scrollY;
-			store_settings();
-			if(picker_open === true) get_picker_dimensions(); // Positionen / Abmessungen für Picker-Controls aktualisieren
+			if(init === false) { // "init_cm()" scrollt zur zuletzt gespeicherten Position und triggert damit diese Funktion. In dem Fall ist "store_settings()" aber unnötig, da sich die gespeicherte Scroll-Position nicht ändert!
+				store_settings();
+				if(picker_open === true) get_picker_dimensions(); // Positionen / Abmessungen für Picker-Controls aktualisieren
+			}
 		}, 200);
 	},
 
@@ -4658,10 +4740,9 @@
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 	store_settings = () => {
+
 		vscode.postMessage({ // ███ vscode APi ███
-
 			command: 'store_settings',
-
 			// geänderte settings an extension.js zurückgeben
 			settings: {
 				mode_current: mode_current,
@@ -4670,12 +4751,11 @@
 				filter_val: filter_val, // leer | string
 				picker_open: picker_open, // bool
 				picker_color: picker_color, // false || string
+				picker_color_init: picker_color_init, // false || string
 				scroll_pos: store_scroll_pos, // int
 				cm_width: cm_width // int
 			}
-
 		});
-
 	},
 
 	// █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -5237,7 +5317,7 @@
 
 				config: vscode.workspace.getConfiguration('color-manager'),
 
-				settings: settings, // mode_current, c_cid, filter_open, filter_val, picker_open, picker_color, scroll_pos, cm_width
+				settings: settings, // mode_current, c_cid, filter_open, filter_val, picker_open, picker_color, picker_color_init, scroll_pos, cm_width
 
 				arr_n: arr_n_c[0],
 				arr_c: arr_n_c[1],
@@ -5263,7 +5343,6 @@
 			filter_val = 	msg.settings.filter_val; // leer | string
 
 			picker_open = msg.settings.picker_open;
-			picker_color = msg.settings.picker_color; // false | Farbwert-String
 
 			c_max = msg.c_max;
 
@@ -5338,7 +5417,7 @@
 			window.addEventListener('scroll', window_scroll_end, false); // erst nach dem Scrollen binden, sonst wird gleich wieder store_settings() aufgerufen
 
 			// Picker öffnen ?
-			if(picker_open === true) open_picker(picker_color);
+			if(picker_open === true) open_picker(msg.settings.picker_color, msg.settings.picker_color_init);
 
 			// post ready
 			vscode.postMessage({
@@ -5487,6 +5566,7 @@
 		// Picker Status
 		picker_open = false,
 		picker_color = '', // muss string sein (nicht 0 oder false) sonst später Fehler bei substr ("substr is not a function ...")
+		picker_color_init = '', // muss string sein (nicht 0 oder false) sonst später Fehler bei substr ("substr is not a function ...")
 
 		// resize bars
 		cm_width = 0,
