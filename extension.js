@@ -1,6 +1,7 @@
 	/*
 
 		TODO: HWB support
+		TODO: RGB + HSL CSS Color Module Level 4 support. Aber nur Erkennung und Einfügen (innerhalb der Extension alles wie gehabt mit Kommas)
 
 		Grundlegende Funktionsweise:
 		----------------------------
@@ -453,7 +454,7 @@
 
 		vscode.workspace.onDidSaveTextDocument((uri) => {
 
-			if(uri.fileName.toLocaleLowerCase() === p_path.replace(/\//g, '\\').toLocaleLowerCase()) {
+			if(uri.fileName.replace(/\\/g, '/').toLowerCase() === p_path.toLowerCase()) {
 
 				load_colors(p_path, result => { // result = false || [ arr_n, arr_c ]
 					if(result !== false) {
@@ -1143,7 +1144,7 @@
 			die Datei im Factory-Ordner existiert, aber nicht ob sie auch erfolgreich kopiert wurde. Daher ist diese Funktion als Callback-Funktion angelegt: erst wenn
 			alle Dateien kopiert worden (oder zumindest der Versuch erfolgt ist) wird true zurückgeben */
 
-			const 	factory_path = extension_path + '/content/factory palettes/palettes';
+			const factory_path = extension_path + '/content/factory palettes/palettes'; // Achtung! Groß/Kleinschreibung beachten (Linux!!!)
 
 			let arr_files = [],
 				files_len = 0,
@@ -1331,7 +1332,7 @@
 
 				// p_cid ermitteln / prüfen ob zuletzt verwendeter "p_path" noch existiert (bleibt -1 wenn nichts gefunden wird / siehe def globals)
 				for (i = 0; i < p_len; i++) {
-					if((storage_path + arr_p[i]).toLowerCase() + '.scss' === p_path){ // p_path kurz zuvor aus settings geholt, siehe "check_settings()"
+					if((storage_path + arr_p[i]).toLowerCase() + '.scss' === p_path.toLowerCase()){ // p_path kurz zuvor aus settings geholt, siehe "check_settings()"
 						p_cid = i;
 						break;
 					}
@@ -1621,8 +1622,8 @@
 		//  █ █ █ set globals █ █ █
 		activate_context = context;
 		extension_uri = context.extensionUri;
-		extension_path = (extension_uri.fsPath.replace(/\\/g, '/')).toLowerCase();
-		storage_path = (context.globalStoragePath.replace(/\\/g, '/') + '/').toLowerCase();
+		storage_path = (context.globalStoragePath.replace(/\\/g, '/') + '/'); // ███ Achtung!!! ███ Nicht ".toLowerCase()" -> Probleme auf Linux (Linux ist case-sensitiv! Info: Mac OS ist nicht case-sensitiv)
+		extension_path = (extension_uri.fsPath.replace(/\\/g, '/')); // ███ Achtung!!! ███ Nicht ".toLowerCase()" -> Probleme auf Linux (Linux ist case-sensitiv! Info: Mac OS ist nicht case-sensitiv)
 
 		// Einstellungen aus letzter Sitzung abrufen -> siehe "store_settings()"
 		settings = context.globalState.get('settings'); // undefined ||  {mode_current, c_cid, filter_open, filter_val, p_path, picker_open, picker_color, picker_color_init, scroll_pos, cm_width}
