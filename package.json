@@ -1,7 +1,7 @@
 {
 	"name": "color-manager",
 	"displayName": "Color Manager",
-	"description": "color picker and color palette",
+	"description": "Color Picker and Color Palette",
 	"version": "0.7.4",
 	"publisher": "royaction",
 	"engines": {
@@ -32,7 +32,7 @@
 			"activitybar": [
 				{
 					"id": "color_manager_webview_container",
-					"title": "color manager",
+					"title": "Color Manager",
 					"icon": "icon-activitybar.svg"
 				}
 			]
@@ -55,7 +55,7 @@
 					"default": 5000
 				},
 				"color-manager.contextMenu": {
-					"description": "commands that appear on the context menu.",
+					"description": "Commands that appear on the context menu.",
 					"type": "object",
 					"properties": {
 						"edit": {
@@ -80,25 +80,25 @@
 					"additionalProperties": false
 				},
 				"color-manager.autoStartIntellisense": {
-					"description": "if set to true, the current intellisense palette will be loaded automatically when vscode is restarted (run command \"color manager help\" for more infos)",
+					"description": "If set to true, the current intellisense palette will be loaded automatically when vscode is restarted (run command \"color manager help\" for more infos)",
 					"type": "boolean",
 					"default": false
 				},
 				"color-manager.languages": {
-					"description": "array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (run command \"color manager help\" for more infos).",
+					"description": "Array of language-ids where the intellisense-feature will be available, e.g.: \"scss\", \"javascript\" (run command \"color manager help\" for more infos).",
 					"type": "array"
 				},
 				"color-manager.styles": {
-					"description": "customizes the style of the webview-extension: background-color, button-colors ... (run command \"color manager help\" for more infos) ",
+					"description": "Customizes the style of the webview-extension: background-color, button-colors ... (run command \"color manager help\" for more infos) ",
 					"type": "object"
 				},
 				"color-manager.fullWidth": {
-					"description": "disable the left and the right resize bar and use the full width for the user interface (run command \"color manager help\" for more infos)",
+					"description": "Disable the left and the right resize bar and use the full width for the user interface (run command \"color manager help\" for more infos)",
 					"type": "boolean",
 					"default": false
 				},
 				"color-manager.insertClassicHex": {
-					"description": "if set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (run command \"color manager help\" for more infos)",
+					"description": "If set to true, hex-colors will be inserted with the prefix '0x' instead of '#' (run command \"color manager help\" for more infos)",
 					"type": "boolean",
 					"default": false
 				}
@@ -107,47 +107,47 @@
 		"commands": [
 			{
 				"command": "extension.cm_open_palette",
-				"title": "open color palette",
+				"title": "Open Color Palette",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_open_picker",
-				"title": "open color picker",
+				"title": "Open Color Picker",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_open_picker_sel",
-				"title": "edit in color manager",
+				"title": "Edit in Color Manager",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_restore_factory",
-				"title": "restore factory palettes",
+				"title": "Restore Factory Palettes",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_palette_autocomplete_add",
-				"title": "intellisense add palette",
+				"title": "Intellisense Add Palette",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_palette_autocomplete_remove",
-				"title": "intellisense remove palette",
+				"title": "Intellisense Remove Palette",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_find_colors_in_selection",
-				"title": "find colors in selection",
+				"title": "Find Colors in Selection",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_changelog",
-				"title": "color manager changelog",
+				"title": "Color Manager Changelog",
 				"category": "Color Manager"
 			},
 			{
 				"command": "extension.cm_help",
-				"title": "color manager help",
+				"title": "Color Manager Help",
 				"category": "Color Manager"
 			}
 		],
